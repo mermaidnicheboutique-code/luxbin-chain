@@ -1,0 +1,183 @@
+# Temporal Cryptography with the LUXBIN Chain: A Deterministic Human-Centric Key Derivation Framework
+
+**Nichole Christie**
+Independent Researcher
+December 2025
+
+---
+
+## Abstract
+
+This paper introduces **Temporal Cryptography with the LUXBIN Chain**, a deterministic cryptographic key derivation framework that integrates human-memorable temporal inputs with a structured symbolic encoding layer. The system combines time-based inputs (hours, minutes, seconds, and optional dates) with a photonic-inspired encoding scheme known as **LUXBIN**, which maps alphanumeric symbols into a fixed binary and color-space representation. The resulting architecture enables reproducible cryptographic key generation without persistent key storage, emphasizing usability, determinism, and contextual binding. While not intended to replace high-entropy random key generation, the proposed framework is positioned as a complementary approach for identity derivation, key regeneration, and constrained or distributed environments.
+
+---
+
+## 1. Introduction
+
+Modern cryptographic systems prioritize high entropy and randomness, often at the cost of usability and memorability. Users are routinely required to manage long, opaque cryptographic keys or rely on centralized key storage mechanisms. These requirements introduce usability challenges, security risks related to key storage, and energy overhead associated with persistent infrastructure.
+
+Temporal Cryptography with the LUXBIN Chain proposes an alternative design paradigm: **deterministic, human-centric key derivation**. Instead of storing cryptographic material, keys are regenerated on demand from contextual inputs—most notably time—and passed through a symbolic encoding layer that enforces structure, domain separation, and reproducibility.
+
+The primary contribution of this work is not a new cryptographic primitive, but a **system-level framework** that integrates established cryptographic functions with a novel encoding and chaining model.
+
+---
+
+## 2. Background and Related Work
+
+### 2.1 Password-Based and Deterministic Key Derivation
+
+Password-Based Key Derivation Functions (PBKDFs), such as PBKDF2, scrypt, and Argon2, transform low-entropy human inputs into cryptographic keys using computational hardness. While effective, these systems typically rely on static textual inputs and do not incorporate structured symbolic layers.
+
+### 2.2 Time-Based Cryptographic Systems
+
+Time has long been used in cryptography as a synchronization and rotation factor. Examples include Time-Based One-Time Passwords (TOTP) and Kerberos tickets. In these systems, time is treated as contextual input rather than a secret, enabling predictable yet bounded key validity.
+
+### 2.3 Symbolic and Encoded Key Representations
+
+Mnemonic systems such as BIP-39 demonstrate the value of human-readable representations layered atop cryptographic entropy. However, such systems generally map entropy *to* symbols, rather than deriving keys *from* symbolic encodings.
+
+---
+
+## 3. The LUXBIN Encoding System
+
+### 3.1 Design Rationale
+
+LUXBIN is a fixed, deterministic encoding system that maps characters to:
+
+* A 6-bit binary representation
+* A corresponding Hue–Saturation–Lightness (HSL) tuple
+
+Each symbol occupies a fixed position within a 64-symbol space, enabling predictable binary concatenation and symbolic interpretation.
+
+### 3.2 Alphabet Construction
+
+The LUXBIN alphabet consists of:
+
+* Uppercase letters A–Z
+* Digits 0–9
+* Space and punctuation symbols
+
+Each symbol is assigned:
+
+* A unique 6-bit index
+* A corresponding hue within a 360° color wheel
+
+This mapping ensures reversibility and uniform binary structure.
+
+### 3.3 Role in Cryptography
+
+Crucially, LUXBIN is **not treated as an entropy source**. Instead, it functions as:
+
+* A domain separator
+* A structured encoding layer
+* A semantic binding mechanism
+
+By converting human-readable input into a canonical binary form, LUXBIN ensures that identical symbolic inputs always yield identical cryptographic material.
+
+---
+
+## 4. Temporal Cryptography
+
+### 4.1 Time as Deterministic Input
+
+Temporal Cryptography derives key material from representations of time, including:
+
+* Hours, minutes, and optional seconds
+* Optional calendar dates
+
+Time inputs are normalized into numerical representations, ensuring consistent interpretation across formats.
+
+### 4.2 Key Derivation Process
+
+Given a time input (T), the system computes:
+
+1. A normalized numerical representation
+2. A key derivation using PBKDF2-HMAC-SHA256
+3. A fixed-length cryptographic key
+
+This process introduces computational hardness while preserving determinism.
+
+### 4.3 Entropy Considerations
+
+The entropy of temporal inputs is inherently bounded (e.g., seconds in a day). Accordingly, Temporal Cryptography is not intended as a standalone high-security secret but as a **contextual or regenerative factor** within a larger system.
+
+---
+
+## 5. The LUXBIN Chain: Combined Temporal–Symbolic Derivation
+
+### 5.1 Chaining Architecture
+
+The LUXBIN Chain combines temporal key material with LUXBIN-encoded symbolic representations using HMAC:
+
+* Temporal key material serves as the HMAC key
+* LUXBIN binary output serves as the message
+
+This construction ensures cryptographic binding between time context and symbolic encoding.
+
+### 5.2 Security Properties
+
+The chaining approach provides:
+
+* Domain separation between inputs
+* Resistance to key-collision across contexts
+* Deterministic regeneration without storage
+
+Security is derived from standard cryptographic primitives rather than obscurity.
+
+---
+
+## 6. Implementation
+
+A reference implementation was developed in Python using:
+
+* `hashlib` for SHA-256 and PBKDF2
+* `hmac` for secure key combination
+* Deterministic LUXBIN encoding functions
+
+The system exposes a command-line interface allowing users to generate, inspect, and export derived keys.
+
+---
+
+## 7. Applications
+
+Potential applications include:
+
+* Stateless identity regeneration
+* Edge-device authentication
+* Distributed systems with limited storage
+* Context-bound access control
+* Educational and experimental cryptography
+
+The framework is particularly suitable where memorability and determinism are prioritized over maximal entropy.
+
+---
+
+## 8. Limitations
+
+The system does not claim resistance against brute-force attacks when low-entropy inputs are used in isolation. Security guarantees depend on correct system framing, optional secret anchors, and appropriate deployment contexts.
+
+---
+
+## 9. Future Work
+
+Future research directions include:
+
+* Integration with hardware-backed secrets
+* Formal security analysis
+* Extension to post-quantum key derivation frameworks
+* Exploration of symbolic-domain separation in cryptographic protocols
+
+---
+
+## 10. Conclusion
+
+Temporal Cryptography with the LUXBIN Chain demonstrates that cryptographic systems can be designed around **human-centric determinism** without abandoning established security primitives. By reframing time and symbolic encoding as structured inputs rather than entropy sources, the framework opens new avenues for stateless, reproducible, and context-aware cryptographic design.
+
+---
+
+## References
+
+1. Kahn Academy of Sciences. *Time-Based Cryptographic Systems*.
+2. NIST SP 800-132: Recommendation for Password-Based Key Derivation.
+3. RFC 2104: HMAC: Keyed-Hashing for Message Authentication.
+4. RFC 6238: Time-Based One-Time Password Algorithm.
