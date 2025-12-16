@@ -118,7 +118,7 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 ### Build
 ```bash
 # Clone the repository
-git clone https://github.com/nichechristie/luxbin-chain.git
+git clone https://github.com/mermaidnicheboutique-code/luxbin-chain.git
 cd luxbin-chain
 
 # Build the node
@@ -330,7 +330,7 @@ Together, creating a blockchain as fundamental as light and time itself.
 ### For Developers:
 ```bash
 # Clone and start building
-git clone https://github.com/nichechristie/luxbin-chain.git
+git clone https://github.com/mermaidnicheboutique-code/luxbin-chain.git
 cd luxbin-chain
 cargo build --release
 ```
@@ -387,7 +387,7 @@ Built on the shoulders of giants:
 
 **Nichole Christie**
 - 📧 Email: [Your Email]
-- 🐙 GitHub: [@nichechristie](https://github.com/nichechristie)
+- 🐙 GitHub: [@nichechristie](https://github.com/mermaidnicheboutique-code)
 - 🌐 Website: [Coming soon]
 - 💼 LinkedIn: [Your LinkedIn]
 

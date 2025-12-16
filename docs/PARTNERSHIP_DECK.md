@@ -384,7 +384,7 @@ Validator → Generate temporal key (use current time) → Prove timestamp → V
 Founder, LUXBIN Temporal Blockchain
 
 📧 **Email:** [Your Email]
-🐙 **GitHub:** github.com/nichechristie/luxbin-chain
+🐙 **GitHub:** github.com/mermaidnicheboutique-code/luxbin-chain
 🌐 **Demo:** [Hugging Face Simulator Link]
 📄 **Technical Docs:** [Link to Integration Plan]
 

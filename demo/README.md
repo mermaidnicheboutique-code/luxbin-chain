@@ -398,7 +398,7 @@ To connect this demo to an actual Substrate blockchain:
 
 Questions? Issues? Want to contribute?
 
-- GitHub: https://github.com/nichechristie/luxbin-chain
+- GitHub: https://github.com/mermaidnicheboutique-code/luxbin-chain
 - Email: nicholechristie555@gmail.com
 
 ---

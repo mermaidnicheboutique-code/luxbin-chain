@@ -544,7 +544,7 @@ luxbin-chain/
 Founder & Lead Developer
 
 📧 **Email:** nicholechristie555@gmail.com
-🐙 **GitHub:** github.com/nichechristie/luxbin-chain
+🐙 **GitHub:** github.com/mermaidnicheboutique-code/luxbin-chain
 🌐 **Demo:** Run `python3 demo/scripts/full_demo.py`
 📄 **Docs:** See `docs/` directory
 
