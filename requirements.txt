@@ -1,0 +1,6 @@
+cirq
+aiohttp
+aiosqlite
+uvloop
+pytest
+pytest-asyncio
