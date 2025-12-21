@@ -98,16 +98,55 @@ async def save_memory(db: aiosqlite.Connection, signature: str, memory: dict):
     cur = await db.execute("SELECT id FROM memories WHERE signature = ?", (signature,))
     row = await cur.fetchone()
     if row:
-        await db.execute(
-            "UPDATE memories SET last_seen = ?, occurrence_count = ?, data = ? WHERE signature = ?",
-            (memory.get('last_seen', None), memory.get('occurrence_count', 1), data_json, signature),
-        )
+        # Selective update: only update if last_seen increased or occurrence_count increased
+        cur2 = await db.execute("SELECT last_seen, occurrence_count, data FROM memories WHERE signature = ?", (signature,))
+        existing = await cur2.fetchone()
+        try:
+            existing_data = json.loads(existing[2]) if existing and existing[2] else {}
+        except Exception:
+            existing_data = {}
+
+        need_update = False
+        if existing:
+            existing_last = existing[0] or 0
+            existing_count = existing[1] or 0
+            new_last = memory.get('last_seen', existing_last)
+            new_count = memory.get('occurrence_count', existing_count)
+            if new_last > existing_last or new_count > existing_count:
+                need_update = True
+        else:
+            need_update = True
+
+        if need_update:
+            await db.execute(
+                "UPDATE memories SET last_seen = ?, occurrence_count = ?, data = ? WHERE signature = ?",
+                (memory.get('last_seen', None), memory.get('occurrence_count', 1), data_json, signature),
+            )
     else:
         await db.execute(
             "INSERT INTO memories (signature, first_seen, last_seen, occurrence_count, data) VALUES (?, ?, ?, ?, ?)",
             (signature, memory.get('first_seen', None), memory.get('last_seen', None), memory.get('occurrence_count', 1), data_json),
         )
     await db.commit()
+
+
+def _scale_encode_temporal_lock(puzzle: dict) -> bytes:
+    """SCALE-style encoding for TemporalLock: reveal_time(u64 LE) + hash_chain_depth(u32 LE) + initial_hash(32 bytes).
+
+    This is a pragmatic encoder matching Substrate's little-endian primitive encoding for fixed-size types.
+    """
+    import struct
+
+    reveal_time = int(puzzle.get('reveal_time', 0))
+    depth = int(puzzle.get('hash_chain_depth', 0))
+    initial_hash_hex = puzzle.get('initial_hash', '')
+    # normalize hex
+    if initial_hash_hex.startswith('0x'):
+        initial_hash_hex = initial_hash_hex[2:]
+    initial_hash = bytes.fromhex(initial_hash_hex.ljust(64, '0'))[:32]
+
+    b = struct.pack('<Q', reveal_time) + struct.pack('<I', depth) + initial_hash
+    return b
 
 
 async def create_app():
@@ -166,6 +205,40 @@ async def create_app():
     app.router.add_post('/transaction', handle_transaction)
     app.router.add_get('/stats', handle_stats)
     app.router.add_get('/memory', handle_memories)
+
+    async def handle_encode_temporal_lock(request):
+        """POST /encode_temporal_lock
+        body: { "temporal_lock": { "reveal_time": <int>, "hash_chain_depth": <int>, "initial_hash": "hex" } }
+        Returns: { "scale_hex": "0x...", "scale_b64": "..." }
+        """
+        try:
+            data = await request.json()
+            puzzle = data.get('temporal_lock') or data
+        except Exception:
+            return web.json_response({'error': 'invalid json'}, status=400)
+
+        try:
+            encoded = _scale_encode_temporal_lock(puzzle)
+        except Exception as e:
+            return web.json_response({'error': 'encode_failed', 'detail': str(e)}, status=500)
+
+        import base64
+
+        return web.json_response({
+            'scale_hex': '0x' + encoded.hex(),
+            'scale_b64': base64.b64encode(encoded).decode(),
+        })
+
+    app.router.add_post('/encode_temporal_lock', handle_encode_temporal_lock)
+
+    async def handle_root(request):
+        return web.json_response({
+            'service': 'luxbin-immune',
+            'version': '0.1',
+            'endpoints': ['/transaction (POST)', '/stats (GET)', '/memory (GET)', '/encode_temporal_lock (POST)']
+        })
+
+    app.router.add_get('/', handle_root)
 
     return app
 

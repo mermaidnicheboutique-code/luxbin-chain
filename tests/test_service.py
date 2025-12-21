@@ -1,7 +1,10 @@
 import os
+import sys
+import pathlib
 import asyncio
 import json
 import pytest
+import pytest_asyncio
 from aiohttp import web
 from aiohttp import ClientSession
 from aiohttp.test_utils import TestClient, TestServer, unused_port
@@ -9,12 +12,16 @@ from aiohttp.test_utils import TestClient, TestServer, unused_port
 # Ensure test DB is isolated
 os.environ['LUXBIN_IMMUNE_DB'] = 'test_immune.db'
 
+# Make repository root importable so pytest can import top-level modules
+repo_root = pathlib.Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(repo_root))
+
 from luxbin_immune_system import ThreatData
 from immune_service import create_app
 
 
-@pytest.fixture
-async def aiohttp_client(loop, aiohttp_unused_port):
+@pytest_asyncio.fixture
+async def client():
     app = await create_app()
     server = TestServer(app)
     await server.start_server()
@@ -26,8 +33,8 @@ async def aiohttp_client(loop, aiohttp_unused_port):
 
 
 @pytest.mark.asyncio
-async def test_stats_and_transaction(tmp_path, aiohttp_client):
-    client: TestClient = aiohttp_client
+async def test_stats_and_transaction(tmp_path, client):
+    client: TestClient = client
 
     # Replace immune.monitor_transaction with deterministic stub
     immune = client.server.app['immune']
@@ -69,3 +76,22 @@ async def test_stats_and_transaction(tmp_path, aiohttp_client):
         os.remove(db_path)
     except Exception:
         pass
+
+
+@pytest.mark.asyncio
+async def test_encode_temporal_lock(client):
+    client: TestClient = client
+
+    payload = {
+        'temporal_lock': {
+            'reveal_time': 1670000000,
+            'hash_chain_depth': 1000,
+            'initial_hash': '0x' + 'ab' * 32
+        }
+    }
+
+    r = await client.post('/encode_temporal_lock', json=payload)
+    assert r.status == 200
+    body = await r.json()
+    assert body.get('scale_hex', '').startswith('0x')
+    assert 'scale_b64' in body

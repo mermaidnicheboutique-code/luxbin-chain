@@ -4,3 +4,5 @@ aiosqlite
 uvloop
 pytest
 pytest-asyncio
+web3
+requests
