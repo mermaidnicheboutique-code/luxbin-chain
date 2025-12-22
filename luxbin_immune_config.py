@@ -7,7 +7,7 @@ Author: Nichole Christie
 License: MIT
 """
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Dict, List
 
 
@@ -95,14 +95,14 @@ class LuxbinImmuneSystemConfig:
     """Master configuration for complete immune system"""
 
     # Component configurations
-    detector: DetectorConfig = DetectorConfig()
-    defender: DefenderConfig = DefenderConfig()
-    memory: MemoryConfig = MemoryConfig()
-    regulatory: RegulatoryConfig = RegulatoryConfig()
-    ahimsa: AhimsamProtocol = AhimsamProtocol()
-    tokenomics: TokenomicsConfig = TokenomicsConfig()
-    evolution: EvolutionConfig = EvolutionConfig()
-    network: NetworkConfig = NetworkConfig()
+    detector: DetectorConfig = field(default_factory=DetectorConfig)
+    defender: DefenderConfig = field(default_factory=DefenderConfig)
+    memory: MemoryConfig = field(default_factory=MemoryConfig)
+    regulatory: RegulatoryConfig = field(default_factory=RegulatoryConfig)
+    ahimsa: AhimsamProtocol = field(default_factory=AhimsamProtocol)
+    tokenomics: TokenomicsConfig = field(default_factory=TokenomicsConfig)
+    evolution: EvolutionConfig = field(default_factory=EvolutionConfig)
+    network: NetworkConfig = field(default_factory=NetworkConfig)
 
     # System-wide settings
     num_detector_cells: int = 1000
@@ -180,7 +180,7 @@ def development_config() -> LuxbinImmuneSystemConfig:
     config = LuxbinImmuneSystemConfig()
     config.num_detector_cells = 20
     config.num_memory_cells = 5
-    config.num_regulatory_cells = 2
+    config.num_regulatory_cells = 3  # Minimum 3 for consensus
     config.detector.threat_threshold = 0.7  # Lower threshold for testing
     config.network.validator_stake_required = 10.0  # Lower stake for dev
     config.log_level = "DEBUG"

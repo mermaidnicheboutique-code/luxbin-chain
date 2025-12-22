@@ -5,16 +5,16 @@ import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/utils/Counters.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
 
 /**
  * @title ImmuneCell
- * @dev NFT contract for LUXBIN immune system cells
- * Each NFT represents a specific immune cell type with unique properties
+ * @dev NFT contract for LUXBIN immune system cells (OpenZeppelin v5.x compatible)
  */
 contract ImmuneCell is ERC721, ERC721Enumerable, ERC721URIStorage, Ownable {
-    using Counters for Counters.Counter;
-    Counters.Counter private _tokenIdCounter;
+    using Strings for uint256;
+
+    uint256 private _nextTokenId;
 
     // Immune cell types
     enum CellType { DETECTOR, DEFENDER, MEMORY, REGULATORY }
@@ -47,21 +47,17 @@ contract ImmuneCell is ERC721, ERC721Enumerable, ERC721URIStorage, Ownable {
     event ThreatDetected(uint256 indexed tokenId, uint256 threatCount);
     event FalsePositiveRecorded(uint256 indexed tokenId, uint256 falsePositiveCount);
 
-    constructor() ERC721("LUXBIN Immune Cell", "IMMUNE") {}
+    constructor() ERC721("LUXBIN Immune Cell", "IMMUNE") Ownable(msg.sender) {}
 
     /**
      * @dev Mint a new immune cell NFT
-     * @param to Address to receive the NFT
-     * @param cellType Type of immune cell
-     * @param uri Metadata URI for the cell
      */
     function mintCell(
         address to,
         CellType cellType,
         string memory uri
     ) public onlyOwner returns (uint256) {
-        uint256 tokenId = _tokenIdCounter.current();
-        _tokenIdCounter.increment();
+        uint256 tokenId = _nextTokenId++;
 
         _safeMint(to, tokenId);
         _setTokenURI(tokenId, uri);
@@ -88,10 +84,6 @@ contract ImmuneCell is ERC721, ERC721Enumerable, ERC721URIStorage, Ownable {
 
     /**
      * @dev Batch mint multiple cells
-     * @param to Address to receive the NFTs
-     * @param cellType Type of immune cell
-     * @param count Number of cells to mint
-     * @param baseUri Base URI for metadata
      */
     function batchMintCells(
         address to,
@@ -102,7 +94,7 @@ contract ImmuneCell is ERC721, ERC721Enumerable, ERC721URIStorage, Ownable {
         uint256[] memory tokenIds = new uint256[](count);
 
         for (uint256 i = 0; i < count; i++) {
-            string memory uri = string(abi.encodePacked(baseUri, "/", Strings.toString(i)));
+            string memory uri = string(abi.encodePacked(baseUri, "/", i.toString()));
             tokenIds[i] = mintCell(to, cellType, uri);
         }
 
@@ -111,10 +103,9 @@ contract ImmuneCell is ERC721, ERC721Enumerable, ERC721URIStorage, Ownable {
 
     /**
      * @dev Record a successful threat detection
-     * @param tokenId Token ID of the detector cell
      */
     function recordThreatDetection(uint256 tokenId) public onlyOwner {
-        require(_exists(tokenId), "Cell does not exist");
+        require(_ownerOf(tokenId) != address(0), "Cell does not exist");
         require(cells[tokenId].cellType == CellType.DETECTOR, "Only detector cells can detect threats");
 
         CellData storage cell = cells[tokenId];
@@ -129,10 +120,9 @@ contract ImmuneCell is ERC721, ERC721Enumerable, ERC721URIStorage, Ownable {
 
     /**
      * @dev Record a false positive
-     * @param tokenId Token ID of the detector cell
      */
     function recordFalsePositive(uint256 tokenId) public onlyOwner {
-        require(_exists(tokenId), "Cell does not exist");
+        require(_ownerOf(tokenId) != address(0), "Cell does not exist");
 
         CellData storage cell = cells[tokenId];
         cell.falsePositives++;
@@ -156,10 +146,9 @@ contract ImmuneCell is ERC721, ERC721Enumerable, ERC721URIStorage, Ownable {
 
     /**
      * @dev Record a defense response execution
-     * @param tokenId Token ID of the defender cell
      */
     function recordResponse(uint256 tokenId) public onlyOwner {
-        require(_exists(tokenId), "Cell does not exist");
+        require(_ownerOf(tokenId) != address(0), "Cell does not exist");
         require(cells[tokenId].cellType == CellType.DEFENDER, "Only defender cells can execute responses");
 
         CellData storage cell = cells[tokenId];
@@ -169,38 +158,32 @@ contract ImmuneCell is ERC721, ERC721Enumerable, ERC721URIStorage, Ownable {
 
     /**
      * @dev Set quantum fingerprint for a cell
-     * @param tokenId Token ID
-     * @param fingerprint Quantum fingerprint hash
      */
     function setQuantumFingerprint(uint256 tokenId, string memory fingerprint) public onlyOwner {
-        require(_exists(tokenId), "Cell does not exist");
+        require(_ownerOf(tokenId) != address(0), "Cell does not exist");
         cells[tokenId].quantumFingerprint = fingerprint;
     }
 
     /**
      * @dev Activate a cell
-     * @param tokenId Token ID
      */
     function activateCell(uint256 tokenId) public onlyOwner {
-        require(_exists(tokenId), "Cell does not exist");
+        require(_ownerOf(tokenId) != address(0), "Cell does not exist");
         cells[tokenId].isActive = true;
         emit CellActivated(tokenId);
     }
 
     /**
      * @dev Deactivate a cell
-     * @param tokenId Token ID
      */
     function deactivateCell(uint256 tokenId) public onlyOwner {
-        require(_exists(tokenId), "Cell does not exist");
+        require(_ownerOf(tokenId) != address(0), "Cell does not exist");
         cells[tokenId].isActive = false;
         emit CellDeactivated(tokenId);
     }
 
     /**
      * @dev Get all active cells of a specific type owned by an address
-     * @param owner Address to query
-     * @param cellType Type of cell to filter
      */
     function getActiveCellsByType(address owner, CellType cellType)
         public
@@ -230,35 +213,33 @@ contract ImmuneCell is ERC721, ERC721Enumerable, ERC721URIStorage, Ownable {
 
     /**
      * @dev Get cell data
-     * @param tokenId Token ID
      */
     function getCell(uint256 tokenId) public view returns (CellData memory) {
-        require(_exists(tokenId), "Cell does not exist");
+        require(_ownerOf(tokenId) != address(0), "Cell does not exist");
         return cells[tokenId];
     }
 
     /**
      * @dev Get total count of cells by type
-     * @param cellType Type of cell
      */
     function getCellTypeCount(CellType cellType) public view returns (uint256) {
         return cellTypeCounts[cellType];
     }
 
     // Required overrides
-    function _beforeTokenTransfer(
-        address from,
-        address to,
-        uint256 tokenId,
-        uint256 batchSize
-    ) internal override(ERC721, ERC721Enumerable) {
-        super._beforeTokenTransfer(from, to, tokenId, batchSize);
+    function _update(address to, uint256 tokenId, address auth)
+        internal
+        override(ERC721, ERC721Enumerable)
+        returns (address)
+    {
+        return super._update(to, tokenId, auth);
     }
 
-    function _burn(uint256 tokenId) internal override(ERC721, ERC721URIStorage) {
-        CellType cellType = cells[tokenId].cellType;
-        cellTypeCounts[cellType]--;
-        super._burn(tokenId);
+    function _increaseBalance(address account, uint128 value)
+        internal
+        override(ERC721, ERC721Enumerable)
+    {
+        super._increaseBalance(account, value);
     }
 
     function tokenURI(uint256 tokenId)

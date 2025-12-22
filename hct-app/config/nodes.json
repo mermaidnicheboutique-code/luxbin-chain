@@ -1,0 +1,9 @@
+[
+  {
+    "node_id": "local-1",
+    "country": "US",
+    "hardware": "macOS",
+    "dependencies": ["python", "cirq", "web3", "flask"],
+    "datacenter": "local"
+  }
+]

@@ -4,16 +4,12 @@ pragma solidity ^0.8.20;
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/security/Pausable.sol";
+import "@openzeppelin/contracts/utils/Pausable.sol";
 
 /**
  * @title LuxbinToken
  * @dev LUXBIN token for immune system rewards and staking
- * Features:
- * - Mintable by authorized contracts (immune system, staking)
- * - Burnable for deflationary economics
- * - Pausable for emergency stops
- * - Ecosystem fund for sustainability
+ * Compatible with OpenZeppelin v5.x
  */
 contract LuxbinToken is ERC20, ERC20Burnable, Ownable, Pausable {
     // Maximum supply: 1 billion LUXBIN
@@ -37,7 +33,7 @@ contract LuxbinToken is ERC20, ERC20Burnable, Ownable, Pausable {
     event TokensMinted(address indexed to, uint256 amount, address indexed minter);
     event DailyLimitUpdated(address indexed minter, uint256 newLimit);
 
-    constructor(address _ecosystemFund) ERC20("LUXBIN", "LUX") {
+    constructor(address _ecosystemFund) ERC20("LUXBIN", "LUX") Ownable(msg.sender) {
         require(_ecosystemFund != address(0), "Invalid ecosystem fund address");
         ecosystemFund = _ecosystemFund;
 
@@ -47,8 +43,6 @@ contract LuxbinToken is ERC20, ERC20Burnable, Ownable, Pausable {
 
     /**
      * @dev Authorize a contract to mint tokens
-     * @param minter Address of the minter contract
-     * @param _dailyLimit Maximum tokens this minter can mint per day
      */
     function authorizeMinter(address minter, uint256 _dailyLimit) public onlyOwner {
         require(minter != address(0), "Invalid minter address");
@@ -59,7 +53,6 @@ contract LuxbinToken is ERC20, ERC20Burnable, Ownable, Pausable {
 
     /**
      * @dev Revoke minting authorization
-     * @param minter Address to revoke
      */
     function revokeMinter(address minter) public onlyOwner {
         authorizedMinters[minter] = false;
@@ -67,9 +60,7 @@ contract LuxbinToken is ERC20, ERC20Burnable, Ownable, Pausable {
     }
 
     /**
-     * @dev Update daily mint limit for a minter
-     * @param minter Address of the minter
-     * @param newLimit New daily limit
+     * @dev Update daily mint limit
      */
     function updateDailyLimit(address minter, uint256 newLimit) public onlyOwner {
         require(authorizedMinters[minter], "Not an authorized minter");
@@ -79,8 +70,6 @@ contract LuxbinToken is ERC20, ERC20Burnable, Ownable, Pausable {
 
     /**
      * @dev Mint tokens (only callable by authorized minters)
-     * @param to Address to receive tokens
-     * @param amount Amount to mint
      */
     function mint(address to, uint256 amount) public whenNotPaused {
         require(authorizedMinters[msg.sender], "Not authorized to mint");
@@ -89,7 +78,6 @@ contract LuxbinToken is ERC20, ERC20Burnable, Ownable, Pausable {
         // Check daily limit
         uint256 currentDay = block.timestamp / 1 days;
         if (lastMintDay[msg.sender] != currentDay) {
-            // Reset daily counter
             lastMintDay[msg.sender] = currentDay;
             mintedToday[msg.sender] = 0;
         }
@@ -107,8 +95,6 @@ contract LuxbinToken is ERC20, ERC20Burnable, Ownable, Pausable {
 
     /**
      * @dev Batch mint to multiple addresses
-     * @param recipients Array of recipient addresses
-     * @param amounts Array of amounts to mint
      */
     function batchMint(address[] memory recipients, uint256[] memory amounts)
         public
@@ -146,7 +132,6 @@ contract LuxbinToken is ERC20, ERC20Burnable, Ownable, Pausable {
 
     /**
      * @dev Update ecosystem fund address
-     * @param newFund New ecosystem fund address
      */
     function updateEcosystemFund(address newFund) public onlyOwner {
         require(newFund != address(0), "Invalid address");
@@ -155,7 +140,7 @@ contract LuxbinToken is ERC20, ERC20Burnable, Ownable, Pausable {
     }
 
     /**
-     * @dev Pause token transfers (emergency only)
+     * @dev Pause token transfers
      */
     function pause() public onlyOwner {
         _pause();
@@ -170,7 +155,6 @@ contract LuxbinToken is ERC20, ERC20Burnable, Ownable, Pausable {
 
     /**
      * @dev Get remaining mintable amount for today
-     * @param minter Address of the minter
      */
     function getRemainingDailyMint(address minter) public view returns (uint256) {
         if (!authorizedMinters[minter]) {
@@ -190,13 +174,13 @@ contract LuxbinToken is ERC20, ERC20Burnable, Ownable, Pausable {
     }
 
     /**
-     * @dev Override transfer to add pause functionality
+     * @dev Override _update to add pause functionality (OpenZeppelin v5.x)
      */
-    function _beforeTokenTransfer(
-        address from,
-        address to,
-        uint256 amount
-    ) internal override whenNotPaused {
-        super._beforeTokenTransfer(from, to, amount);
+    function _update(address from, address to, uint256 value)
+        internal
+        override
+        whenNotPaused
+    {
+        super._update(from, to, value);
     }
 }
