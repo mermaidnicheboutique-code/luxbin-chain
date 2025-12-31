@@ -507,6 +507,46 @@
             <a href="https://github.com/mermaidnicheboutique-code/luxbin-chain/blob/master/luxbin_immune_config.py" class="download-btn colab-btn" target="_blank">⚙️ Configuration System</a>
         </section>
 
+        <section id="buy-luxbin">
+            <h2>💎 Buy LUXBIN Tokens</h2>
+            <p>Connect your wallet and purchase LUXBIN tokens on Base network</p>
+
+            <div id="wallet-section">
+                <button id="connect-wallet" class="download-btn" style="font-size: 1.2rem; padding: 18px 36px;">
+                    🔗 Connect Wallet
+                </button>
+                <p id="wallet-status" style="margin-top: 1rem; font-size: 1.1rem;"></p>
+            </div>
+
+            <div id="purchase-section" style="display: none; margin-top: 2rem;">
+                <div class="features">
+                    <div class="feature" style="text-align: center;">
+                        <h3>💵 Buy with ETH</h3>
+                        <input type="number" id="eth-amount" placeholder="Amount in ETH" style="width: 100%; padding: 12px; border-radius: 10px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; font-size: 1rem; margin: 1rem 0;">
+                        <button id="buy-with-eth" class="download-btn" style="width: 100%;">Buy with ETH</button>
+                    </div>
+
+                    <div class="feature" style="text-align: center;">
+                        <h3>💵 Buy with USDC</h3>
+                        <input type="number" id="usdc-amount" placeholder="Amount in USDC" style="width: 100%; padding: 12px; border-radius: 10px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; font-size: 1rem; margin: 1rem 0;">
+                        <button id="buy-with-usdc" class="download-btn colab-btn" style="width: 100%;">Buy with USDC</button>
+                    </div>
+
+                    <div class="feature" style="text-align: center;">
+                        <h3>🔄 Swap on Uniswap</h3>
+                        <p style="margin: 1rem 0;">Trade LUXBIN on decentralized exchanges</p>
+                        <a href="https://app.uniswap.org/#/swap?outputCurrency=0x66b4627B4Dd73228D24f24E844B6094091875169&chain=base" target="_blank" class="download-btn github-btn" style="width: 100%; display: block; text-align: center;">Open Uniswap</a>
+                    </div>
+                </div>
+
+                <div style="margin-top: 2rem; padding: 1.5rem; background: rgba(255,255,255,0.05); border-radius: 20px;">
+                    <p><strong>LUXBIN Token Address (Base):</strong></p>
+                    <p style="font-family: monospace; font-size: 0.9rem; word-break: break-all;">0x66b4627B4Dd73228D24f24E844B6094091875169</p>
+                    <p style="margin-top: 1rem; font-size: 0.95rem;">Network: Base • Symbol: LUX</p>
+                </div>
+            </div>
+        </section>
+
         <section id="about">
             <h2>About This Research</h2>
             <p>This groundbreaking work combines quantum physics principles with classical cryptographic techniques to create a hybrid security framework suitable for next-generation distributed systems. The experimental validation demonstrates real-world applicability using accessible cloud computing infrastructure.</p>
@@ -520,7 +560,109 @@
         </footer>
     </div>
 
+    <script src="https://cdn.ethers.io/lib/ethers-5.7.umd.min.js"></script>
     <script>
+        // Web3 Configuration
+        const LUXBIN_TOKEN = '0x66b4627B4Dd73228D24f24E844B6094091875169';
+        const USDC_BASE = '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913';
+        const BASE_CHAIN_ID = '0x2105'; // Base mainnet
+
+        let provider, signer, userAddress;
+
+        // Connect Wallet
+        document.getElementById('connect-wallet').addEventListener('click', async () => {
+            try {
+                if (typeof window.ethereum === 'undefined') {
+                    alert('Please install MetaMask or Coinbase Wallet!');
+                    window.open('https://metamask.io/download/', '_blank');
+                    return;
+                }
+
+                provider = new ethers.providers.Web3Provider(window.ethereum);
+                await provider.send("eth_requestAccounts", []);
+                signer = provider.getSigner();
+                userAddress = await signer.getAddress();
+
+                // Switch to Base network
+                try {
+                    await window.ethereum.request({
+                        method: 'wallet_switchEthereumChain',
+                        params: [{ chainId: BASE_CHAIN_ID }],
+                    });
+                } catch (switchError) {
+                    if (switchError.code === 4902) {
+                        await window.ethereum.request({
+                            method: 'wallet_addEthereumChain',
+                            params: [{
+                                chainId: BASE_CHAIN_ID,
+                                chainName: 'Base',
+                                nativeCurrency: { name: 'Ethereum', symbol: 'ETH', decimals: 18 },
+                                rpcUrls: ['https://mainnet.base.org'],
+                                blockExplorerUrls: ['https://basescan.org']
+                            }]
+                        });
+                    }
+                }
+
+                document.getElementById('wallet-status').innerHTML = `✅ Connected: ${userAddress.slice(0, 6)}...${userAddress.slice(-4)}`;
+                document.getElementById('purchase-section').style.display = 'block';
+                document.getElementById('connect-wallet').textContent = '✅ Wallet Connected';
+                document.getElementById('connect-wallet').disabled = true;
+            } catch (error) {
+                console.error('Connection error:', error);
+                alert('Failed to connect wallet: ' + error.message);
+            }
+        });
+
+        // Buy with ETH
+        document.getElementById('buy-with-eth').addEventListener('click', async () => {
+            const amount = document.getElementById('eth-amount').value;
+            if (!amount || amount <= 0) {
+                alert('Please enter a valid amount');
+                return;
+            }
+
+            try {
+                // Simple direct purchase - send ETH to contract
+                const tx = await signer.sendTransaction({
+                    to: LUXBIN_TOKEN,
+                    value: ethers.utils.parseEther(amount)
+                });
+
+                alert('Transaction sent! Hash: ' + tx.hash);
+                await tx.wait();
+                alert('Purchase successful! 🎉');
+            } catch (error) {
+                console.error('Purchase error:', error);
+                alert('Purchase failed: ' + error.message);
+            }
+        });
+
+        // Buy with USDC
+        document.getElementById('buy-with-usdc').addEventListener('click', async () => {
+            const amount = document.getElementById('usdc-amount').value;
+            if (!amount || amount <= 0) {
+                alert('Please enter a valid amount');
+                return;
+            }
+
+            try {
+                const usdcContract = new ethers.Contract(
+                    USDC_BASE,
+                    ['function transfer(address to, uint256 amount) returns (bool)'],
+                    signer
+                );
+
+                const tx = await usdcContract.transfer(LUXBIN_TOKEN, ethers.utils.parseUnits(amount, 6));
+                alert('Transaction sent! Hash: ' + tx.hash);
+                await tx.wait();
+                alert('Purchase successful! 🎉');
+            } catch (error) {
+                console.error('Purchase error:', error);
+                alert('Purchase failed: ' + error.message);
+            }
+        });
+
         // Create floating particles
         const particlesContainer = document.querySelector('.particles');
         const particleCount = 20;
