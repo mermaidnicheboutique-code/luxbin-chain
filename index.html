@@ -10,13 +10,41 @@
             line-height: 1.6;
             margin: 0;
             padding: 0;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #000;
             color: #333;
+            overflow-x: hidden;
         }
+
+        /* Video Background */
+        #bg-video {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            min-width: 100%;
+            min-height: 100%;
+            width: auto;
+            height: auto;
+            transform: translate(-50%, -50%);
+            z-index: -2;
+            object-fit: cover;
+        }
+
+        .video-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.7) 0%, rgba(118, 75, 162, 0.7) 100%);
+            z-index: -1;
+        }
+
         .container {
             max-width: 1200px;
             margin: 0 auto;
             padding: 20px;
+            position: relative;
+            z-index: 1;
         }
         header {
             background: rgba(255, 255, 255, 0.9);
@@ -118,6 +146,12 @@
     </style>
 </head>
 <body>
+    <!-- Background Video -->
+    <video id="bg-video" autoplay muted loop playsinline>
+        <source src="bg-video-1.mp4" type="video/mp4">
+    </video>
+    <div class="video-overlay"></div>
+
     <div class="container">
         <header>
             <h1>LUXBIN</h1>
@@ -232,5 +266,34 @@
             <p>Contact: <a href="mailto:Nicholechristie555@gmail.com">Nicholechristie555@gmail.com</a></p>
         </footer>
     </div>
+
+    <script>
+        // Video sequencing
+        const videos = [
+            'bg-video-1.mp4',
+            'bg-video-2.mp4',
+            'bg-video-3.mp4',
+            'bg-video-4.mp4',
+            'bg-video-5.mp4',
+            'bg-video-6.mp4'
+        ];
+        let currentVideoIndex = 0;
+        const videoElement = document.getElementById('bg-video');
+
+        // Play next video in sequence
+        videoElement.addEventListener('ended', function() {
+            currentVideoIndex = (currentVideoIndex + 1) % videos.length;
+            videoElement.src = videos[currentVideoIndex];
+            videoElement.play();
+        });
+
+        // Fallback: if loop fails, manually loop
+        videoElement.addEventListener('error', function() {
+            console.log('Video error, trying next...');
+            currentVideoIndex = (currentVideoIndex + 1) % videos.length;
+            videoElement.src = videos[currentVideoIndex];
+            videoElement.play();
+        });
+    </script>
 </body>
 </html>
