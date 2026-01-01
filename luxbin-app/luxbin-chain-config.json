@@ -1,0 +1,27 @@
+{
+  "chain": {
+    "name": "LUXBIN",
+    "chainId": 4242,
+    "nativeCurrency": {
+      "name": "LUXBIN",
+      "symbol": "LUX",
+      "decimals": 18
+    },
+    "rpcUrls": ["http://localhost:9944"],
+    "blockExplorerUrls": []
+  },
+  "erc4337": {
+    "entryPoint": "0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789",
+    "bundlerUrl": "YOUR_BUNDLER_URL",
+    "paymasterUrl": "YOUR_PAYMASTER_URL"
+  },
+  "coinbaseSmartWallet": {
+    "supported": true,
+    "features": [
+      "social_recovery",
+      "gasless_transactions",
+      "batch_operations",
+      "cross_chain_transfers"
+    ]
+  }
+}
