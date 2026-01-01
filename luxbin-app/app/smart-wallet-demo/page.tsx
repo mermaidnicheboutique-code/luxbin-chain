@@ -83,9 +83,14 @@ export default function SmartWalletDemo() {
                 LUXBIN
               </span>
             </Link>
-            <Link href="/" className="text-gray-300 hover:text-white transition-colors">
-              ← Back to Home
-            </Link>
+            <nav className="flex gap-6">
+              <Link href="/" className="text-gray-300 hover:text-white transition-colors text-sm font-medium">
+                ← Home
+              </Link>
+              <Link href="/mirror" className="text-gray-300 hover:text-white transition-colors text-sm font-medium">
+                Mirror
+              </Link>
+            </nav>
           </div>
         </header>
 

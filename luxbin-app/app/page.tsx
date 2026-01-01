@@ -29,6 +29,7 @@ export default function Home() {
               {[
                 { name: "Chain Info", href: "#chain" },
                 { name: "Buy", href: "#buy" },
+                { name: "Mirror", href: "/mirror" },
                 { name: "Developers", href: "/developers" },
                 { name: "API", href: "/api-docs" }
               ].map((link) => (
