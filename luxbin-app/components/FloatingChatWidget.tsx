@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useAccount } from "wagmi";
+import { ChatbotAvatar, EmotionBadge } from "./ChatbotAvatar";
 
 interface Message {
   id: string;
@@ -11,6 +12,9 @@ interface Message {
   metadata?: {
     action?: string;
     params?: any;
+    emotion?: string;
+    photonic?: boolean;
+    source?: string;
   };
 }
 
@@ -23,10 +27,12 @@ export function FloatingChatWidget() {
       role: "assistant",
       content: "👋 Hi! I'm the LUXBIN AI assistant. I can help you understand LUXBIN features, analyze transactions, guide you through buying LUX tokens, and more. How can I help you today?",
       timestamp: new Date(),
+      metadata: { emotion: "positive" }
     },
   ]);
   const [inputValue, setInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [currentEmotion, setCurrentEmotion] = useState<string>("neutral");
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -53,7 +59,7 @@ export function FloatingChatWidget() {
     setIsLoading(true);
 
     try {
-      // Call Ollama-powered API
+      // Call LUXBIN emotional AI with photonic encoding
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -61,7 +67,9 @@ export function FloatingChatWidget() {
           messages: [...messages, userMessage].map(m => ({
             role: m.role,
             content: m.content
-          }))
+          })),
+          user_id: address || 'anonymous_user',
+          session_id: `luxbin_${Date.now()}`
         }),
       });
 
@@ -76,8 +84,15 @@ export function FloatingChatWidget() {
         role: "assistant",
         content: data.reply,
         timestamp: new Date(),
-        metadata: { source: data.source }
+        metadata: {
+          source: data.source,
+          emotion: data.metadata?.emotion_detected,
+          photonic: data.metadata?.has_photonic_visualization
+        }
       };
+
+      // Update avatar emotion
+      setCurrentEmotion(data.metadata?.emotion_detected || "neutral");
 
       setMessages((prev) => [...prev, aiMessage]);
     } catch (error) {
@@ -134,31 +149,50 @@ export function FloatingChatWidget() {
 
   return (
     <>
-      {/* Floating Button */}
+      {/* Floating Button with Pulsing Animation */}
       {!isOpen && (
-        <button
-          onClick={() => setIsOpen(true)}
-          className="fixed bottom-6 right-6 z-50 w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center text-white text-2xl hover:scale-110"
-          aria-label="Open chat"
-        >
-          💬
-        </button>
+        <div className="fixed bottom-6 right-6 z-50">
+          {/* Pulsing ring animation */}
+          <div className="absolute inset-0 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 animate-ping opacity-75" />
+
+          {/* Main button */}
+          <button
+            onClick={() => setIsOpen(true)}
+            className="relative w-20 h-20 bg-gradient-to-r from-purple-500 via-pink-500 to-purple-600 rounded-full shadow-2xl hover:shadow-purple-500/50 transition-all duration-300 flex flex-col items-center justify-center text-white hover:scale-110 border-2 border-white/20"
+            aria-label="Open chat"
+          >
+            <div className="text-3xl mb-1">💬</div>
+            <div className="text-xs font-bold">AI Chat</div>
+          </button>
+
+          {/* Tooltip */}
+          <div className="absolute bottom-full right-0 mb-2 bg-black/90 text-white text-xs px-3 py-2 rounded-lg whitespace-nowrap opacity-0 hover:opacity-100 transition-opacity pointer-events-none">
+            Chat with LUXBIN AI Assistant
+            <div className="absolute top-full right-4 w-2 h-2 bg-black/90 transform rotate-45 -mt-1" />
+          </div>
+        </div>
       )}
 
       {/* Chat Window */}
       {isOpen && (
         <div className="fixed bottom-6 right-6 z-50 w-96 h-[600px] bg-black/90 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-5 duration-300">
-          {/* Header */}
+          {/* Header with Avatar */}
           <div className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 border-b border-white/10 px-4 py-3 flex justify-between items-center">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center text-sm">
-                🤖
-              </div>
+            <div className="flex items-center gap-3">
+              {/* Animated Video Avatar */}
+              <ChatbotAvatar
+                emotion={currentEmotion as any}
+                isTyping={isLoading}
+                size={50}
+              />
               <div>
-                <div className="text-white font-semibold text-sm">LUXBIN AI Assistant</div>
+                <div className="text-white font-semibold text-sm flex items-center gap-2">
+                  LUXBIN AI Assistant
+                  <EmotionBadge emotion={currentEmotion} />
+                </div>
                 <div className="text-gray-400 text-xs flex items-center gap-1">
                   <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                  Online
+                  Emotional AI • Photonic Encoding
                 </div>
               </div>
             </div>
@@ -229,7 +263,7 @@ export function FloatingChatWidget() {
               </button>
             </div>
             <div className="text-xs text-gray-500 mt-2 text-center">
-              Powered by Claude AI • {messages.length} messages
+              Powered by LUXBIN Emotional AI 🧠 • Photonic Encoding ⚡ • {messages.length} messages
             </div>
           </div>
         </div>

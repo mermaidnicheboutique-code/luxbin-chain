@@ -37,7 +37,7 @@ Be helpful, concise, and always guide users to the right features.`;
 
 export async function POST(request: NextRequest) {
   try {
-    const { messages } = await request.json();
+    const { messages, user_id, session_id } = await request.json();
 
     if (!Array.isArray(messages) || messages.length === 0) {
       return NextResponse.json(
@@ -46,7 +46,32 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Try Ollama first
+    // Try LUXBIN Python AI backend first (emotional AI with photonic encoding)
+    try {
+      const pythonResponse = await fetch('http://localhost:5000/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages,
+          user_id: user_id || 'web_user',
+          session_id: session_id || `session_${Date.now()}`
+        }),
+        signal: AbortSignal.timeout(30000), // 30 second timeout for AI processing
+      });
+
+      if (pythonResponse.ok) {
+        const data = await pythonResponse.json();
+        return NextResponse.json({
+          reply: data.reply,
+          source: data.source || 'luxbin-ai',
+          metadata: data.metadata || {}
+        });
+      }
+    } catch (pythonError) {
+      console.log('Python AI backend unavailable, trying Ollama...', pythonError);
+    }
+
+    // Try Ollama as fallback
     try {
       const ollamaResponse = await fetch('http://localhost:11434/api/generate', {
         method: 'POST',

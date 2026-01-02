@@ -1,0 +1,23 @@
+# Minimal Dependencies for LUXBIN Chatbot
+# For full intelligence, you need at least ONE of: OpenAI, Anthropic, or Google API key
+
+# Core Web Framework
+flask>=3.0.0
+flask-cors>=4.0.0
+
+# AI APIs (install what you'll use)
+openai>=1.0.0              # For ChatGPT
+anthropic>=0.7.0           # For Claude
+google-generativeai>=0.3.0 # For Gemini (FREE!)
+
+# Essential utilities
+python-dotenv>=1.0.0
+requests>=2.31.0
+
+# Image processing (for photonic encoding)
+Pillow>=10.0.0
+matplotlib>=3.8.0
+numpy>=1.24.0
+
+# Optional: For better performance
+aiohttp>=3.9.0

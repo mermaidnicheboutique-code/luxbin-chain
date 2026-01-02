@@ -5,6 +5,7 @@ import { BackgroundVideos } from "@/components/BackgroundVideos";
 import { LuxbinSwap } from "@/components/LuxbinSwap";
 import { CoinbaseOnramp } from "@/components/CoinbaseOnramp";
 import { LuxbinTokenLogoRotating, LuxbinTokenLogo } from "@/components/AnimatedTokenLogo";
+import { FloatingChatWidget } from "@/components/FloatingChatWidget";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 
@@ -400,6 +401,9 @@ export default function Home() {
           </div>
         </footer>
       </div>
+
+      {/* AI Chatbot with Animated Avatar */}
+      <FloatingChatWidget />
     </div>
   );
 }
