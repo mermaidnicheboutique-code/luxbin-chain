@@ -48,20 +48,52 @@ export function FloatingChatWidget() {
     };
 
     setMessages((prev) => [...prev, userMessage]);
+    const currentInput = inputValue;
     setInputValue("");
     setIsLoading(true);
 
-    // Simulate AI response (will be replaced with actual API call)
-    setTimeout(() => {
+    try {
+      // Call Ollama-powered API
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: [...messages, userMessage].map(m => ({
+            role: m.role,
+            content: m.content
+          }))
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('API request failed');
+      }
+
+      const data = await response.json();
+
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
-        content: generateMockResponse(inputValue, address),
+        content: data.reply,
+        timestamp: new Date(),
+        metadata: { source: data.source }
+      };
+
+      setMessages((prev) => [...prev, aiMessage]);
+    } catch (error) {
+      console.error('Chat error:', error);
+
+      // Fallback to mock response
+      const aiMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        role: "assistant",
+        content: generateMockResponse(currentInput, address),
         timestamp: new Date(),
       };
       setMessages((prev) => [...prev, aiMessage]);
+    } finally {
       setIsLoading(false);
-    }, 1500);
+    }
   };
 
   const generateMockResponse = (input: string, userAddress?: string): string => {
