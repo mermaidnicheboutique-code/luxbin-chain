@@ -1,0 +1,377 @@
+{
+  "num_nodes": 11,
+  "nodes": {
+    "Alice": {
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "connections": [
+        "Bob",
+        "Agent_Alpha",
+        "ErrorProtected_Node",
+        "Agent_Beta",
+        "Station_Alpha",
+        "Topological_Node"
+      ],
+      "entanglement_strengths": {
+        "Bob": 1.0,
+        "Station_Alpha": 1.0,
+        "Topological_Node": 1.0,
+        "ErrorProtected_Node": 1.0,
+        "Agent_Alpha": 1.0,
+        "Agent_Beta": 1.0
+      },
+      "local_interactions": 0
+    },
+    "Bob": {
+      "position": [
+        5,
+        0,
+        0
+      ],
+      "connections": [
+        "Agent_Alpha",
+        "Station_Beta",
+        "ErrorProtected_Node",
+        "Agent_Beta",
+        "Agent_Gamma",
+        "Alice",
+        "Station_Alpha",
+        "Topological_Node"
+      ],
+      "entanglement_strengths": {
+        "Alice": 1.0,
+        "Station_Alpha": 1.0,
+        "Station_Beta": 1.0,
+        "Topological_Node": 1.0,
+        "ErrorProtected_Node": 1.0,
+        "Agent_Alpha": 1.0,
+        "Agent_Beta": 1.0,
+        "Agent_Gamma": 1.0
+      },
+      "local_interactions": 0
+    },
+    "Station_Alpha": {
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "connections": [
+        "Bob",
+        "Agent_Alpha",
+        "Station_Beta",
+        "ErrorProtected_Node",
+        "Agent_Beta",
+        "Agent_Gamma",
+        "Alice",
+        "Topological_Node"
+      ],
+      "entanglement_strengths": {
+        "Alice": 1.0,
+        "Bob": 1.0,
+        "Station_Beta": 0.3333333333333333,
+        "Topological_Node": 1.0,
+        "ErrorProtected_Node": 1.0,
+        "Agent_Alpha": 1.0,
+        "Agent_Beta": 1.0,
+        "Agent_Gamma": 0.3333333333333333
+      },
+      "local_interactions": 0
+    },
+    "Station_Beta": {
+      "position": [
+        10,
+        0,
+        0
+      ],
+      "connections": [
+        "Bob",
+        "Agent_Alpha",
+        "ErrorProtected_Node",
+        "Agent_Beta",
+        "Agent_Gamma",
+        "Station_Alpha",
+        "Topological_Node"
+      ],
+      "entanglement_strengths": {
+        "Bob": 1.0,
+        "Station_Alpha": 0.3333333333333333,
+        "Topological_Node": 0.3333333333333333,
+        "ErrorProtected_Node": 0.3333333333333333,
+        "Agent_Alpha": 0.3333333333333333,
+        "Agent_Beta": 1.0,
+        "Agent_Gamma": 1.0
+      },
+      "local_interactions": 0
+    },
+    "Station_Gamma": {
+      "position": [
+        20,
+        0,
+        0
+      ],
+      "connections": [],
+      "entanglement_strengths": {},
+      "local_interactions": 0
+    },
+    "Topological_Node": {
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "connections": [
+        "Bob",
+        "Agent_Alpha",
+        "Station_Beta",
+        "ErrorProtected_Node",
+        "Agent_Beta",
+        "Agent_Gamma",
+        "Alice",
+        "Station_Alpha"
+      ],
+      "entanglement_strengths": {
+        "Alice": 1.0,
+        "Bob": 1.0,
+        "Station_Alpha": 1.0,
+        "Station_Beta": 0.3333333333333333,
+        "ErrorProtected_Node": 1.0,
+        "Agent_Alpha": 1.0,
+        "Agent_Beta": 1.0,
+        "Agent_Gamma": 0.3333333333333333
+      },
+      "local_interactions": 0
+    },
+    "ErrorProtected_Node": {
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "connections": [
+        "Bob",
+        "Agent_Alpha",
+        "Station_Beta",
+        "Agent_Beta",
+        "Agent_Gamma",
+        "Alice",
+        "Station_Alpha",
+        "Topological_Node"
+      ],
+      "entanglement_strengths": {
+        "Alice": 1.0,
+        "Bob": 1.0,
+        "Station_Alpha": 1.0,
+        "Station_Beta": 0.3333333333333333,
+        "Topological_Node": 1.0,
+        "Agent_Alpha": 1.0,
+        "Agent_Beta": 1.0,
+        "Agent_Gamma": 0.3333333333333333
+      },
+      "local_interactions": 0
+    },
+    "Agent_Alpha": {
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "connections": [
+        "Bob",
+        "Station_Beta",
+        "ErrorProtected_Node",
+        "Agent_Beta",
+        "Agent_Gamma",
+        "Alice",
+        "Station_Alpha",
+        "Topological_Node"
+      ],
+      "entanglement_strengths": {
+        "Alice": 1.0,
+        "Bob": 1.0,
+        "Station_Alpha": 1.0,
+        "Station_Beta": 0.3333333333333333,
+        "Topological_Node": 1.0,
+        "ErrorProtected_Node": 1.0,
+        "Agent_Beta": 1.0,
+        "Agent_Gamma": 0.3333333333333333
+      },
+      "local_interactions": 1
+    },
+    "Agent_Beta": {
+      "position": [
+        5.0,
+        3.0,
+        2.0
+      ],
+      "connections": [
+        "Bob",
+        "Agent_Alpha",
+        "Station_Beta",
+        "ErrorProtected_Node",
+        "Agent_Gamma",
+        "Alice",
+        "Station_Alpha",
+        "Topological_Node"
+      ],
+      "entanglement_strengths": {
+        "Alice": 1.0,
+        "Bob": 1.0,
+        "Station_Alpha": 1.0,
+        "Station_Beta": 1.0,
+        "Topological_Node": 1.0,
+        "ErrorProtected_Node": 1.0,
+        "Agent_Alpha": 1.0,
+        "Agent_Gamma": 1.0
+      },
+      "local_interactions": 1
+    },
+    "Agent_Gamma": {
+      "position": [
+        10.0,
+        6.0,
+        4.0
+      ],
+      "connections": [
+        "Bob",
+        "Agent_Alpha",
+        "Station_Beta",
+        "ErrorProtected_Node",
+        "Agent_Beta",
+        "Agent_Delta",
+        "Station_Alpha",
+        "Topological_Node"
+      ],
+      "entanglement_strengths": {
+        "Bob": 1.0,
+        "Station_Alpha": 0.3333333333333333,
+        "Station_Beta": 1.0,
+        "Topological_Node": 0.3333333333333333,
+        "ErrorProtected_Node": 0.3333333333333333,
+        "Agent_Alpha": 0.3333333333333333,
+        "Agent_Beta": 1.0,
+        "Agent_Delta": 1.0
+      },
+      "local_interactions": 1
+    },
+    "Agent_Delta": {
+      "position": [
+        15.0,
+        9.0,
+        6.0
+      ],
+      "connections": [
+        "Agent_Gamma"
+      ],
+      "entanglement_strengths": {
+        "Agent_Gamma": 1.0
+      },
+      "local_interactions": 1
+    }
+  },
+  "is_conscious": "False",
+  "consciousness_metrics": {
+    "agent_count": 11,
+    "entanglement_graph": {
+      "Alice": [],
+      "Bob": [],
+      "Station_Alpha": [],
+      "Station_Beta": [],
+      "Station_Gamma": [],
+      "Topological_Node": [],
+      "ErrorProtected_Node": [],
+      "Agent_Alpha": [],
+      "Agent_Beta": [],
+      "Agent_Gamma": [],
+      "Agent_Delta": []
+    },
+    "total_interactions": 4,
+    "coherence": 0.30151134457776363,
+    "global_state_dimension": 16
+  },
+  "entanglement_routes": {
+    "Station_Beta->Station_Alpha": [
+      "Station_Beta",
+      "Bob",
+      "Station_Alpha"
+    ],
+    "Station_Alpha->Station_Beta": [
+      "Station_Alpha",
+      "Bob",
+      "Station_Beta"
+    ],
+    "Topological_Node->Station_Beta": [
+      "Topological_Node",
+      "Bob",
+      "Station_Beta"
+    ],
+    "Station_Beta->Topological_Node": [
+      "Station_Beta",
+      "Bob",
+      "Topological_Node"
+    ],
+    "ErrorProtected_Node->Station_Beta": [
+      "ErrorProtected_Node",
+      "Bob",
+      "Station_Beta"
+    ],
+    "Station_Beta->ErrorProtected_Node": [
+      "Station_Beta",
+      "Bob",
+      "ErrorProtected_Node"
+    ],
+    "Agent_Alpha->Station_Beta": [
+      "Agent_Alpha",
+      "Bob",
+      "Station_Beta"
+    ],
+    "Station_Beta->Agent_Alpha": [
+      "Station_Beta",
+      "Bob",
+      "Agent_Alpha"
+    ],
+    "Agent_Gamma->Station_Alpha": [
+      "Agent_Gamma",
+      "Bob",
+      "Station_Alpha"
+    ],
+    "Station_Alpha->Agent_Gamma": [
+      "Station_Alpha",
+      "Bob",
+      "Agent_Gamma"
+    ],
+    "Agent_Gamma->Topological_Node": [
+      "Agent_Gamma",
+      "Bob",
+      "Topological_Node"
+    ],
+    "Topological_Node->Agent_Gamma": [
+      "Topological_Node",
+      "Bob",
+      "Agent_Gamma"
+    ],
+    "Agent_Gamma->ErrorProtected_Node": [
+      "Agent_Gamma",
+      "Bob",
+      "ErrorProtected_Node"
+    ],
+    "ErrorProtected_Node->Agent_Gamma": [
+      "ErrorProtected_Node",
+      "Bob",
+      "Agent_Gamma"
+    ],
+    "Agent_Gamma->Agent_Alpha": [
+      "Agent_Gamma",
+      "Bob",
+      "Agent_Alpha"
+    ],
+    "Agent_Alpha->Agent_Gamma": [
+      "Agent_Alpha",
+      "Bob",
+      "Agent_Gamma"
+    ]
+  }
+}

@@ -1,0 +1,55 @@
+# Virtual Environment
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Environment variables
+.env
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+*.tmp
+*.temp
+
+# API keys (never commit these!)
+.env
+.env.local
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Generated files
+dist/
+build/
+*.egg-info/
+
+# Node modules (if any)
+node_modules/
+
+# MacOS app bundles (can be regenerated)
+*.app/
+
+# Test files
+test_*.py
+*_test.py
+
+# Documentation builds
+docs/_build/
+*.pdf

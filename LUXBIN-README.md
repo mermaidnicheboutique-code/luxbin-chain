@@ -8,7 +8,7 @@
 
 ### Main Blockchain Files:
 ```
-/Users/nicholechristie/luxbin-chain/
+luxbin-chain/
 ```
 Or click: **LUXBIN-Blockchain** shortcut on your Desktop
 
@@ -178,7 +178,7 @@ Combines temporal cryptography with photonic encoding. 🌟"
 Built on Substrate (Polkadot SDK). Working testnet deployed."
 
 ### For Investors:
-Use: `/Users/nicholechristie/Desktop/LUXBIN_PARTNERSHIP_DECK.md`
+See: docs/PARTNERSHIP_DECK.md
 
 ### For Developers:
 Share: https://github.com/mermaidnicheboutique-code/luxbin-chain
