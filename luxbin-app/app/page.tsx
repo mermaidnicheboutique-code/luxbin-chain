@@ -28,6 +28,8 @@ export default function Home() {
             <nav className="hidden md:flex gap-6">
               {[
                 { name: "About", href: "/about" },
+                { name: "Research", href: "/research" },
+                { name: "Technical", href: "/technical" },
                 { name: "Chain Info", href: "#chain" },
                 { name: "Buy", href: "#buy" },
                 { name: "Mirror", href: "/mirror" },
