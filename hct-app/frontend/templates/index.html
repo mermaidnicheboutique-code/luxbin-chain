@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LUXBIN HCT Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🔮 LUXBIN HCT Dashboard</h1>
+            <p>Harmonic Convergence Theory - Real-Time System Health</p>
+        </header>
+
+        <!-- Current HCT Score -->
+        <div class="hct-score-container">
+            <div class="hct-score" id="hct-score">
+                <div class="score-value">--</div>
+                <div class="score-label">HCT Score</div>
+            </div>
+            <div class="system-mode" id="system-mode">
+                <span class="mode-badge">LOADING...</span>
+            </div>
+        </div>
+
+        <!-- Component Scores -->
+        <div class="components-grid">
+            <div class="component-card" id="component-b">
+                <h3>B - Biology</h3>
+                <div class="component-value">--</div>
+                <div class="component-label">System Health</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <div class="component-card" id="component-h">
+                <h3>H - History</h3>
+                <div class="component-value">--</div>
+                <div class="component-label">Memory & Precedent</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <div class="component-card" id="component-g">
+                <h3>G - Geology</h3>
+                <div class="component-value">--</div>
+                <div class="component-label">Infrastructure</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <div class="component-card" id="component-r">
+                <h3>R - Religion</h3>
+                <div class="component-value">--</div>
+                <div class="component-label">Ethics & Constraints</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <div class="component-card" id="component-e">
+                <h3>E - Electromagnetism</h3>
+                <div class="component-value">--</div>
+                <div class="component-label">Energy & Signal</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 0%"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- HCT History Chart -->
+        <div class="chart-container">
+            <h2>HCT History</h2>
+            <canvas id="hct-chart"></canvas>
+        </div>
+
+        <!-- Operational Modifiers -->
+        <div class="modifiers-grid">
+            <div class="modifier-card">
+                <h3>Consensus Weight</h3>
+                <div class="modifier-value" id="consensus-weight">--</div>
+            </div>
+
+            <div class="modifier-card">
+                <h3>Staking Multiplier</h3>
+                <div class="modifier-value" id="staking-multiplier">--</div>
+            </div>
+
+            <div class="modifier-card">
+                <h3>Immune Response</h3>
+                <div class="modifier-value" id="immune-response">--</div>
+            </div>
+        </div>
+
+        <!-- Coefficient Tuning -->
+        <div class="coefficients-section">
+            <h2>Coefficient Tuning</h2>
+            <div class="coefficient-controls">
+                <div class="coeff-input">
+                    <label>α (Biology)</label>
+                    <input type="range" id="alpha" min="0.1" max="2.0" step="0.1" value="1.0">
+                    <span id="alpha-value">1.0</span>
+                </div>
+                <div class="coeff-input">
+                    <label>β (History)</label>
+                    <input type="range" id="beta" min="0.1" max="2.0" step="0.1" value="1.0">
+                    <span id="beta-value">1.0</span>
+                </div>
+                <div class="coeff-input">
+                    <label>γ (Geology)</label>
+                    <input type="range" id="gamma" min="0.1" max="2.0" step="0.1" value="1.0">
+                    <span id="gamma-value">1.0</span>
+                </div>
+                <div class="coeff-input">
+                    <label>δ (Religion)</label>
+                    <input type="range" id="delta" min="0.1" max="2.0" step="0.1" value="1.0">
+                    <span id="delta-value">1.0</span>
+                </div>
+                <div class="coeff-input">
+                    <label>ε (Electromagnetism)</label>
+                    <input type="range" id="epsilon" min="0.1" max="2.0" step="0.1" value="1.0">
+                    <span id="epsilon-value">1.0</span>
+                </div>
+                <button id="update-coeffs" class="btn-primary">Update Coefficients</button>
+            </div>
+        </div>
+
+        <footer>
+            <p>LUXBIN HCT Dashboard | Last updated: <span id="last-update">Never</span></p>
+            <button id="refresh-btn" class="btn-secondary">Refresh Now</button>
+        </footer>
+    </div>
+
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>

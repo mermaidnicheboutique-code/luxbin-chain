@@ -177,6 +177,16 @@ parameter_types! {
 	pub const MaxModelsPerNode: u32 = 10;
 	/// Maximum tokens per AI request
 	pub const MaxTokensPerRequest: u32 = 4096;
+	/// Maximum threat predictions stored (last 1000 blocks)
+	pub const MaxThreatPredictions: u32 = 1000;
+	/// Maximum neural chains supported (Base, Ethereum, Arbitrum, Polygon)
+	pub const MaxNeuralChains: u32 = 4;
+	/// Maximum grid metric entries (24h at 10min intervals = 144)
+	pub const MaxGridMetrics: u32 = 144;
+	/// Maximum quantum eyes entries
+	pub const MaxQuantumEyesEntries: u32 = 100;
+	/// Minimum threat level to trigger alert (0-100)
+	pub const ThreatAlertThreshold: u8 = 60;
 }
 
 /// Configure the LUXBIN temporal crypto pallet
@@ -192,4 +202,14 @@ impl pallet_ai_compute::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type MaxModelsPerNode = MaxModelsPerNode;
 	type MaxTokensPerRequest = MaxTokensPerRequest;
+}
+
+/// Configure the LUXBIN Quantum AI pallet
+impl pallet_quantum_ai::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type MaxThreatPredictions = MaxThreatPredictions;
+	type MaxNeuralChains = MaxNeuralChains;
+	type MaxGridMetrics = MaxGridMetrics;
+	type MaxQuantumEyesEntries = MaxQuantumEyesEntries;
+	type ThreatAlertThreshold = ThreatAlertThreshold;
 }

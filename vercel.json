@@ -1,0 +1,7 @@
+{
+  "buildCommand": "cd luxbin-app && npm install && npm run build",
+  "devCommand": "cd luxbin-app && npm run dev",
+  "installCommand": "npm install --prefix luxbin-app",
+  "framework": "nextjs",
+  "outputDirectory": "luxbin-app/.next"
+}

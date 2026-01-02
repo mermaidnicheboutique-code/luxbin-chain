@@ -4,184 +4,513 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LUXBIN - Quantum-Classical Hybrid Cryptography</title>
+    <meta name="description" content="LUXBIN quantum cryptography research">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
     <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            line-height: 1.6;
+        * {
             margin: 0;
             padding: 0;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: #333;
+            box-sizing: border-box;
         }
+
+        body {
+            font-family: 'Cormorant Garamond', Georgia, serif;
+            line-height: 1.6;
+            color: #ffffff;
+            overflow-x: hidden;
+            background: #0a0a0f;
+        }
+
+        /* Video Background */
+        #bg-video {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            min-width: 100%;
+            min-height: 100%;
+            width: auto;
+            height: auto;
+            transform: translate(-50%, -50%);
+            z-index: -3;
+            object-fit: cover;
+        }
+
+        .video-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.2) 0%, rgba(118, 75, 162, 0.2) 50%, rgba(240, 147, 251, 0.15) 100%);
+            backdrop-filter: blur(0px);
+        }
+
+        /* Floating Particles */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .particle {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            animation: float 20s infinite ease-in-out;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) translateX(0) rotate(0deg); }
+            25% { transform: translateY(-100px) translateX(100px) rotate(90deg); }
+            50% { transform: translateY(-50px) translateX(-100px) rotate(180deg); }
+            75% { transform: translateY(-150px) translateX(50px) rotate(270deg); }
+        }
+
         .container {
             max-width: 1200px;
             margin: 0 auto;
             padding: 20px;
+            position: relative;
+            z-index: 1;
         }
+
+        /* Glassmorphism Header */
         header {
-            background: rgba(255, 255, 255, 0.9);
-            padding: 2rem;
-            border-radius: 10px;
-            margin-bottom: 2rem;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            background: transparent;
+            backdrop-filter: none;
+            border: none;
+            padding: 3rem;
+            border-radius: 30px;
+            margin: 2rem 0 3rem 0;
+            box-shadow: none;
+            animation: fadeInDown 1s ease;
+            position: relative;
+            overflow: hidden;
         }
+
+        header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            animation: shimmer 3s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
         h1 {
-            color: #2c3e50;
+            font-family: 'Cinzel', Georgia, serif;
+            font-size: 4rem;
+            font-weight: 900;
             text-align: center;
-            margin-bottom: 0.5rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #fff 0%, #a8b3ff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: 3px;
+            animation: glow 2s ease-in-out infinite alternate;
         }
+
+        @keyframes glow {
+            from { filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.3)); }
+            to { filter: drop-shadow(0 0 40px rgba(255, 255, 255, 0.6)); }
+        }
+
         .subtitle {
             text-align: center;
-            color: #7f8c8d;
-            font-style: italic;
+            font-size: 1.2rem;
+            color: rgba(255, 255, 255, 0.8);
+            font-weight: 300;
+            margin-bottom: 1rem;
         }
+
         .author {
             text-align: center;
-            font-weight: bold;
-            color: #34495e;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1.1rem;
         }
+
+        /* Glassmorphism Sections */
         section {
-            background: rgba(255, 255, 255, 0.95);
-            padding: 2rem;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 3rem;
             margin-bottom: 2rem;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-radius: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            animation: fadeInUp 0.8s ease;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
+
+        section:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 48px rgba(0, 0, 0, 0.2);
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
         h2 {
-            color: #2c3e50;
-            border-bottom: 2px solid #3498db;
-            padding-bottom: 0.5rem;
+            font-family: 'Cinzel', Georgia, serif;
+            color: #ffffff;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            position: relative;
+            padding-bottom: 1rem;
+            letter-spacing: 2px;
         }
+
+        h2::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 80px;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            border-radius: 2px;
+        }
+
+        p {
+            color: rgba(255, 255, 255, 0.85);
+            font-size: 1.1rem;
+            line-height: 1.8;
+        }
+
+        /* Modern Buttons */
         .download-btn {
             display: inline-block;
-            background: #3498db;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 12px 24px;
+            padding: 14px 28px;
             text-decoration: none;
-            border-radius: 5px;
-            font-weight: bold;
+            border-radius: 50px;
+            font-weight: 600;
             margin: 10px 10px 10px 0;
-            transition: background 0.3s;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            position: relative;
+            overflow: hidden;
         }
+
+        .download-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s;
+        }
+
+        .download-btn:hover::before {
+            left: 100%;
+        }
+
         .download-btn:hover {
-            background: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(102, 126, 234, 0.6);
         }
+
         .github-btn {
-            background: #333;
+            background: linear-gradient(135deg, #24292e 0%, #1a1e22 100%);
+            box-shadow: 0 4px 15px rgba(36, 41, 46, 0.4);
         }
+
         .github-btn:hover {
-            background: #555;
+            box-shadow: 0 6px 25px rgba(36, 41, 46, 0.6);
         }
+
         .colab-btn {
-            background: #ffa500;
+            background: linear-gradient(135deg, #ffa500 0%, #ff8c00 100%);
+            box-shadow: 0 4px 15px rgba(255, 165, 0, 0.4);
         }
+
         .colab-btn:hover {
-            background: #ff8c00;
+            box-shadow: 0 6px 25px rgba(255, 165, 0, 0.6);
         }
+
+        /* Feature Cards */
         .features {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 1rem;
-            margin: 1rem 0;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
         }
+
         .feature {
-            background: #f8f9fa;
-            padding: 1rem;
-            border-radius: 5px;
-            border-left: 4px solid #3498db;
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            padding: 2rem;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
         }
+
+        .feature:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateY(-5px) scale(1.02);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .feature h3 {
+            color: #ffffff;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        .feature p {
+            color: rgba(255, 255, 255, 0.75);
+            font-size: 1rem;
+        }
+
+        /* Animated Results */
         .results {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1rem;
-            margin: 1rem 0;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
         }
+
         .result {
             text-align: center;
-            padding: 1rem;
-            background: #f8f9fa;
-            border-radius: 5px;
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
         }
+
+        .result:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: scale(1.05);
+        }
+
         .metric {
-            font-size: 2rem;
-            font-weight: bold;
-            color: #3498db;
+            font-size: 3rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, #667eea 0%, #f093fb 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+            animation: countUp 2s ease;
         }
+
+        .result p {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+
         footer {
             text-align: center;
-            padding: 2rem;
-            background: rgba(255, 255, 255, 0.9);
-            border-radius: 10px;
-            margin-top: 2rem;
+            padding: 3rem;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 30px;
+            margin-top: 3rem;
+        }
+
+        footer p {
+            color: rgba(255, 255, 255, 0.7);
+            margin: 0.5rem 0;
+        }
+
+        footer a {
+            color: #667eea;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        footer a:hover {
+            color: #764ba2;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2.5rem;
+            }
+            h2 {
+                font-size: 2rem;
+            }
+            section {
+                padding: 2rem;
+            }
+            .features, .results {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Scroll Reveal Animation */
+        .reveal {
+            opacity: 0;
+            transform: translateY(50px);
+            transition: all 0.6s ease;
+        }
+
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
         }
     </style>
 </head>
 <body>
+    <!-- Video Background -->
+    <video id="bg-video" autoplay muted loop playsinline>
+        <source src="bg-video-1.mp4" type="video/mp4">
+    </video>
+    <div class="video-overlay"></div>
+
+    <div class="particles"></div>
+
     <div class="container">
         <header>
             <h1>LUXBIN</h1>
-            <p class="subtitle">Quantum-Classical Hybrid Cryptography with Acoustic Shielding and LDD Consensus</p>
-            <p class="author">By Nichole Christie<br>
-            <em>Independent Researcher</em></p>
+            <p class="subtitle">The Quantum-Secured Blockchain Token</p>
+            <p class="author">Powering the Next Generation of Cryptographic Security<br>
+            <em>Base Network • Symbol: LUX</em></p>
         </header>
 
-        <section id="abstract">
-            <h2>Abstract</h2>
-            <p>LUXBIN introduces a novel quantum-classical hybrid cryptographic system combining three innovative components: Acoustic Quantum Shielding for environmental noise control, LDD (Lightning Diamond Device) Consensus for scalable blockchain validation, and Trinity Cryptography for hardware-bound key generation. This research presents experimental validation of all components using cloud GPU infrastructure and quantum simulation, demonstrating acoustic wave interference patterns, consensus scaling to 50,000+ validators, cryptographic key uniqueness, and quantum circuit integration via Google's Cirq framework. The system achieves 512-bit security strength through multi-factor key generation combining hardware physics, acoustic environments, temporal constraints, and quantum-compatible cryptographic primitives.</p>
+        <section id="overview">
+            <h2>What is LUXBIN?</h2>
+            <p>LUXBIN (LUX) is a revolutionary blockchain token that combines quantum cryptography, physics-based consensus, and biological security patterns to create the most advanced distributed ledger security system ever developed.</p>
+            <p>Unlike traditional tokens that rely solely on computational power, LUXBIN leverages quantum principles, acoustic physics, and immune system biology to secure transactions and validate blocks - making it resistant to both classical and quantum computing attacks.</p>
         </section>
 
-        <section id="download">
-            <h2>Download Research Paper</h2>
-            <p>Get the complete scientific paper with experimental results:</p>
-            <a href="luxbin-paper.pdf" class="download-btn">📄 Download PDF</a>
-            <a href="luxbin-paper.tex" class="download-btn">📝 LaTeX Source</a>
-            <a href="https://github.com/mermaidnicheboutique-code/luxbin-chain" class="download-btn github-btn">🐙 View on GitHub</a>
-        </section>
-
-        <section id="features">
-            <h2>Key Innovations</h2>
+        <section id="token-utility">
+            <h2>How LUXBIN Secures the Blockchain</h2>
             <div class="features">
                 <div class="feature">
-                    <h3>🔊 Acoustic Quantum Shielding</h3>
-                    <p>Piezoelectric wave interference for quantum device environmental control and stabilization.</p>
+                    <h3>⚡ LDD Consensus Validation</h3>
+                    <p>Token holders participate in Lightning Diamond Device consensus - a physics-inspired proof mechanism that scales to 50,000+ validators while maintaining quantum-resistant security.</p>
                 </div>
                 <div class="feature">
-                    <h3>⚡ LDD Consensus</h3>
-                    <p>Physics-inspired consensus mechanism scaling to enterprise validator networks with GPU acceleration.</p>
+                    <h3>🔐 Trinity Cryptography Staking</h3>
+                    <p>Stake LUX tokens to generate hardware-bound cryptographic keys combining device physics, acoustic environments, and temporal constraints for 512-bit security strength.</p>
                 </div>
                 <div class="feature">
-                    <h3>🔐 Trinity Cryptography</h3>
-                    <p>Multi-factor key generation combining hardware physics, acoustic environments, and temporal constraints.</p>
+                    <h3>🦠 Immune System Defense</h3>
+                    <p>LUX powers the biological immune framework - token holders deploy Detector, Defender, Memory, and Regulatory cells as NFTs that autonomously protect the network from attacks.</p>
                 </div>
                 <div class="feature">
-                    <h3>⚛️ Cirq Quantum Integration</h3>
-                    <p>Quantum circuit simulations validating photonic encoding and temporal proofs on NISQ devices.</p>
+                    <h3>🔊 Acoustic Shielding Network</h3>
+                    <p>Use LUX to activate piezoelectric wave interference shields that stabilize quantum operations and prevent environmental noise attacks on quantum nodes.</p>
                 </div>
             </div>
         </section>
 
-        <section id="results">
-            <h2>Experimental Results</h2>
+        <section id="tokenomics">
+            <h2>Token Metrics</h2>
             <div class="results">
                 <div class="result">
-                    <div class="metric">1.999</div>
-                    <p>Max Acoustic Interference Amplitude</p>
+                    <div class="metric">512-bit</div>
+                    <p>Security Strength</p>
                 </div>
                 <div class="result">
                     <div class="metric">50,000+</div>
-                    <p>Validators Supported</p>
+                    <p>Max Validators</p>
                 </div>
                 <div class="result">
                     <div class="metric">10.2x</div>
                     <p>GPU Acceleration</p>
                 </div>
                 <div class="result">
-                    <div class="metric">512-bit</div>
-                    <p>Security Strength</p>
+                    <div class="metric">Quantum</div>
+                    <p>Attack Resistant</p>
+                </div>
+            </div>
+            <div style="margin-top: 2rem; padding: 1.5rem; background: rgba(255,255,255,0.05); border-radius: 20px;">
+                <p><strong>Contract Address (Base):</strong></p>
+                <p style="font-family: monospace; font-size: 0.9rem; word-break: break-all;">0x66b4627B4Dd73228D24f24E844B6094091875169</p>
+                <p style="margin-top: 1rem;"><strong>Network:</strong> Base Mainnet</p>
+                <p><strong>Symbol:</strong> LUX</p>
+                <p><strong>Type:</strong> ERC-20 Utility Token</p>
+            </div>
+        </section>
+
+        <section id="buy-luxbin">
+            <h2>💎 Buy LUXBIN Tokens</h2>
+            <p>Connect your wallet and purchase LUXBIN tokens on Base network</p>
+
+            <div id="wallet-section">
+                <button id="connect-wallet" class="download-btn" style="font-size: 1.2rem; padding: 18px 36px;">
+                    🔗 Connect Wallet
+                </button>
+                <p id="wallet-status" style="margin-top: 1rem; font-size: 1.1rem;"></p>
+            </div>
+
+            <div id="purchase-section" style="display: none; margin-top: 2rem;">
+                <div class="features">
+                    <div class="feature" style="text-align: center;">
+                        <h3>💵 Buy with ETH</h3>
+                        <input type="number" id="eth-amount" placeholder="Amount in ETH" style="width: 100%; padding: 12px; border-radius: 10px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; font-size: 1rem; margin: 1rem 0;">
+                        <button id="buy-with-eth" class="download-btn" style="width: 100%;">Buy with ETH</button>
+                    </div>
+
+                    <div class="feature" style="text-align: center;">
+                        <h3>💵 Buy with USDC</h3>
+                        <input type="number" id="usdc-amount" placeholder="Amount in USDC" style="width: 100%; padding: 12px; border-radius: 10px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; font-size: 1rem; margin: 1rem 0;">
+                        <button id="buy-with-usdc" class="download-btn colab-btn" style="width: 100%;">Buy with USDC</button>
+                    </div>
+
+                    <div class="feature" style="text-align: center;">
+                        <h3>🔄 Swap on Uniswap</h3>
+                        <p style="margin: 1rem 0;">Trade LUXBIN on decentralized exchanges</p>
+                        <a href="https://app.uniswap.org/#/swap?outputCurrency=0x66b4627B4Dd73228D24f24E844B6094091875169&chain=base" target="_blank" class="download-btn github-btn" style="width: 100%; display: block; text-align: center;">Open Uniswap</a>
+                    </div>
+                </div>
+
+                <div style="margin-top: 2rem; padding: 1.5rem; background: rgba(255,255,255,0.05); border-radius: 20px;">
+                    <p><strong>LUXBIN Token Address (Base):</strong></p>
+                    <p style="font-family: monospace; font-size: 0.9rem; word-break: break-all;">0x66b4627B4Dd73228D24f24E844B6094091875169</p>
+                    <p style="margin-top: 1rem; font-size: 0.95rem;">Network: Base • Symbol: LUX</p>
                 </div>
             </div>
         </section>
 
+<<<<<<< HEAD
         <section id="experiments">
             <h2>Interactive Experiments</h2>
             <p>Explore the research through live computational notebooks:</p>
@@ -199,36 +528,55 @@
         <section id="immune-system">
             <h2>🦠 LUXBIN DIVINE - Immune Framework</h2>
             <p><strong>NEW:</strong> Transform your blockchain into a living, self-defending organism with NFT-based immune cells!</p>
+=======
+        <section id="security-features">
+            <h2>Advanced Security Features</h2>
+>>>>>>> ecffe8410065f1b782022bfd468b16266cdcd824
             <div class="features">
                 <div class="feature">
-                    <h3>🔍 Detector Cells</h3>
-                    <p>Quantum-enhanced threat scanning using Cirq quantum circuits to patrol the network.</p>
+                    <h3>🦠 Biological Immune System</h3>
+                    <p>Deploy NFT-based immune cells (Detector, Defender, Memory, Regulatory) that autonomously patrol the network, neutralize threats, remember attacks, and prevent false positives through the Ahimsa Protocol.</p>
                 </div>
                 <div class="feature">
-                    <h3>⚔️ Defender Cells</h3>
-                    <p>Temporal cryptography countermeasures that neutralize threats with time-locked responses.</p>
+                    <h3>⚛️ Quantum Circuit Integration</h3>
+                    <p>Built on Google's Cirq framework with quantum circuit simulations validating photonic encoding and temporal proofs on NISQ devices - ensuring quantum-safe cryptography.</p>
                 </div>
                 <div class="feature">
-                    <h3>🧠 Memory Cells</h3>
-                    <p>Store attack patterns forever using quantum fingerprinting and Merkle trees.</p>
+                    <h3>🔊 Acoustic Quantum Shielding</h3>
+                    <p>Piezoelectric wave interference creates constructive/destructive patterns that stabilize quantum operations and shield against environmental decoherence.</p>
                 </div>
                 <div class="feature">
-                    <h3>⚖️ Regulatory Cells</h3>
-                    <p>Ahimsa Protocol compliance prevents auto-immune reactions and false positives.</p>
+                    <h3>⚡ GPU-Accelerated Validation</h3>
+                    <p>LDD consensus achieves 10.2x performance boost through GPU acceleration, enabling enterprise-scale validator networks without sacrificing decentralization.</p>
                 </div>
             </div>
-            <p><strong>Documentation & Implementation:</strong></p>
-            <a href="IMMUNE_SYSTEM_README.md" class="download-btn">📖 Quick Start Guide</a>
-            <a href="LUXBIN_IMMUNE_FRAMEWORK.md" class="download-btn">📚 Technical Specification</a>
-            <a href="luxbin_immune_system.py" class="download-btn colab-btn">🐍 Python Implementation</a>
-            <a href="luxbin_immune_config.py" class="download-btn colab-btn">⚙️ Configuration System</a>
+        </section>
+
+        <section id="use-cases">
+            <h2>Token Use Cases</h2>
+            <p><strong>Validator Staking:</strong> Lock LUX tokens to become a network validator using LDD consensus, earning rewards for securing blocks.</p>
+            <p><strong>Immune Cell Deployment:</strong> Spend LUX to mint and deploy autonomous security NFTs that defend the network from attacks 24/7.</p>
+            <p><strong>Quantum Shield Activation:</strong> Pay LUX to activate acoustic shielding on quantum nodes, protecting them from environmental interference.</p>
+            <p><strong>Trinity Key Generation:</strong> Use LUX to generate hardware-bound cryptographic keys with 512-bit security for ultra-secure wallets and smart contracts.</p>
+            <p><strong>Governance:</strong> Vote on protocol upgrades, security parameters, and immune system policies using LUX governance tokens.</p>
+        </section>
+
+        <section id="research">
+            <h2>Scientific Foundation</h2>
+            <p>LUXBIN is built on peer-reviewed cryptographic research combining quantum physics, acoustic engineering, and computational biology. The system has been experimentally validated using cloud GPU infrastructure and quantum simulation frameworks.</p>
+            <p><strong>Research Documentation:</strong></p>
+            <a href="https://github.com/mermaidnicheboutique-code/luxbin-chain/raw/master/luxbin-paper.pdf" class="download-btn" download>📄 Research Paper (PDF)</a>
+            <a href="https://github.com/mermaidnicheboutique-code/luxbin-chain/blob/master/colab-gpu-test.ipynb" class="download-btn colab-btn" target="_blank">🧪 GPU Validation</a>
+            <a href="https://github.com/mermaidnicheboutique-code/luxbin-chain/blob/master/cirq-luxbin-integration.ipynb" class="download-btn colab-btn" target="_blank">⚛️ Quantum Circuits</a>
+            <a href="https://github.com/mermaidnicheboutique-code/luxbin-chain" class="download-btn github-btn" target="_blank">🐙 View on GitHub</a>
+            <p style="margin-top: 1.5rem;"><strong>Key Research Areas:</strong> Quantum-Classical Hybrid Cryptography • Acoustic Wave Interference • LDD Consensus Mechanism • Trinity Cryptography • Biological Immune Frameworks • Cirq Quantum Integration</p>
         </section>
 
         <section id="about">
-            <h2>About This Research</h2>
-            <p>This groundbreaking work combines quantum physics principles with classical cryptographic techniques to create a hybrid security framework suitable for next-generation distributed systems. The experimental validation demonstrates real-world applicability using accessible cloud computing infrastructure.</p>
-            <p>The new <strong>Immune Framework</strong> extends LUXBIN from a static protocol into a living cybernetic organism with biological immune system properties - detecting threats, defending autonomously, remembering attacks, and evolving continuously.</p>
-            <p><strong>Status:</strong> Research paper ready for publication • Experimental validation complete • Immune system framework released • Open source implementation available</p>
+            <h2>About LUXBIN</h2>
+            <p>LUXBIN represents the convergence of quantum computing, blockchain technology, and biological systems. The token powers a living, self-defending blockchain organism that adapts to threats, learns from attacks, and evolves continuously.</p>
+            <p>Created by <strong>Nichole Christie</strong>, independent researcher in quantum cryptography and distributed systems security.</p>
+            <p><strong>Status:</strong> Live on Base Network • Experimental validation complete • Open source • Community-driven development</p>
         </section>
 
         <footer>
@@ -236,5 +584,224 @@
             <p>Contact: <a href="mailto:Nicholechristie555@gmail.com">Nicholechristie555@gmail.com</a></p>
         </footer>
     </div>
+
+    <script src="https://cdn.ethers.io/lib/ethers-5.7.umd.min.js"></script>
+    <script>
+        // Web3 Configuration
+        const LUXBIN_TOKEN = '0x66b4627B4Dd73228D24f24E844B6094091875169';
+        const USDC_BASE = '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913';
+        const BASE_CHAIN_ID = '0x2105'; // Base mainnet
+
+        let provider, signer, userAddress;
+
+        // Connect Wallet
+        document.getElementById('connect-wallet').addEventListener('click', async () => {
+            try {
+                if (typeof window.ethereum === 'undefined') {
+                    alert('Please install MetaMask or Coinbase Wallet!');
+                    window.open('https://metamask.io/download/', '_blank');
+                    return;
+                }
+
+                provider = new ethers.providers.Web3Provider(window.ethereum);
+                await provider.send("eth_requestAccounts", []);
+                signer = provider.getSigner();
+                userAddress = await signer.getAddress();
+
+                // Switch to Base network
+                try {
+                    await window.ethereum.request({
+                        method: 'wallet_switchEthereumChain',
+                        params: [{ chainId: BASE_CHAIN_ID }],
+                    });
+                } catch (switchError) {
+                    if (switchError.code === 4902) {
+                        await window.ethereum.request({
+                            method: 'wallet_addEthereumChain',
+                            params: [{
+                                chainId: BASE_CHAIN_ID,
+                                chainName: 'Base',
+                                nativeCurrency: { name: 'Ethereum', symbol: 'ETH', decimals: 18 },
+                                rpcUrls: ['https://mainnet.base.org'],
+                                blockExplorerUrls: ['https://basescan.org']
+                            }]
+                        });
+                    }
+                }
+
+                document.getElementById('wallet-status').innerHTML = `✅ Connected: ${userAddress.slice(0, 6)}...${userAddress.slice(-4)}`;
+                document.getElementById('purchase-section').style.display = 'block';
+                document.getElementById('connect-wallet').textContent = '✅ Wallet Connected';
+                document.getElementById('connect-wallet').disabled = true;
+            } catch (error) {
+                console.error('Connection error:', error);
+                alert('Failed to connect wallet: ' + error.message);
+            }
+        });
+
+        // Buy with ETH
+        document.getElementById('buy-with-eth').addEventListener('click', async () => {
+            const amount = document.getElementById('eth-amount').value;
+            if (!amount || amount <= 0) {
+                alert('Please enter a valid amount');
+                return;
+            }
+
+            try {
+                // Simple direct purchase - send ETH to contract
+                const tx = await signer.sendTransaction({
+                    to: LUXBIN_TOKEN,
+                    value: ethers.utils.parseEther(amount)
+                });
+
+                alert('Transaction sent! Hash: ' + tx.hash);
+                await tx.wait();
+                alert('Purchase successful! 🎉');
+            } catch (error) {
+                console.error('Purchase error:', error);
+                alert('Purchase failed: ' + error.message);
+            }
+        });
+
+        // Buy with USDC
+        document.getElementById('buy-with-usdc').addEventListener('click', async () => {
+            const amount = document.getElementById('usdc-amount').value;
+            if (!amount || amount <= 0) {
+                alert('Please enter a valid amount');
+                return;
+            }
+
+            try {
+                const usdcContract = new ethers.Contract(
+                    USDC_BASE,
+                    ['function transfer(address to, uint256 amount) returns (bool)'],
+                    signer
+                );
+
+                const tx = await usdcContract.transfer(LUXBIN_TOKEN, ethers.utils.parseUnits(amount, 6));
+                alert('Transaction sent! Hash: ' + tx.hash);
+                await tx.wait();
+                alert('Purchase successful! 🎉');
+            } catch (error) {
+                console.error('Purchase error:', error);
+                alert('Purchase failed: ' + error.message);
+            }
+        });
+
+        // Create floating particles
+        const particlesContainer = document.querySelector('.particles');
+        const particleCount = 20;
+
+        for (let i = 0; i < particleCount; i++) {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+
+            const size = Math.random() * 100 + 50;
+            particle.style.width = size + 'px';
+            particle.style.height = size + 'px';
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.top = Math.random() * 100 + '%';
+            particle.style.animationDelay = Math.random() * 20 + 's';
+            particle.style.animationDuration = (Math.random() * 10 + 15) + 's';
+
+            particlesContainer.appendChild(particle);
+        }
+
+        // Video sequencing for 6 videos
+        const videos = [
+            'bg-video-1.mp4',
+            'bg-video-2.mp4',
+            'bg-video-3.mp4',
+            'bg-video-4.mp4',
+            'bg-video-5.mp4',
+            'bg-video-6.mp4'
+        ];
+        let currentVideoIndex = 0;
+        const videoElement = document.getElementById('bg-video');
+
+        // Play next video in sequence
+        videoElement.addEventListener('ended', function() {
+            currentVideoIndex = (currentVideoIndex + 1) % videos.length;
+            videoElement.src = videos[currentVideoIndex];
+            videoElement.play();
+        });
+
+        // Fallback: if loop fails, manually loop
+        videoElement.addEventListener('error', function() {
+            console.log('Video error, trying next...');
+            currentVideoIndex = (currentVideoIndex + 1) % videos.length;
+            videoElement.src = videos[currentVideoIndex];
+            videoElement.play();
+        });
+
+        // Scroll reveal animation
+        const revealElements = document.querySelectorAll('section');
+
+        const revealOnScroll = () => {
+            const windowHeight = window.innerHeight;
+            revealElements.forEach(element => {
+                const elementTop = element.getBoundingClientRect().top;
+                const revealPoint = 150;
+
+                if (elementTop < windowHeight - revealPoint) {
+                    element.classList.add('active');
+                }
+            });
+        };
+
+        window.addEventListener('scroll', revealOnScroll);
+        revealOnScroll(); // Initial check
+
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Animated counter for metrics
+        const animateValue = (element, start, end, duration) => {
+            let startTimestamp = null;
+            const step = (timestamp) => {
+                if (!startTimestamp) startTimestamp = timestamp;
+                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                const value = progress * (end - start) + start;
+                element.textContent = Math.floor(value).toLocaleString();
+                if (progress < 1) {
+                    window.requestAnimationFrame(step);
+                }
+            };
+            window.requestAnimationFrame(step);
+        };
+
+        // Trigger counter animation when metrics are in view
+        const metrics = document.querySelectorAll('.metric');
+        const animateMetrics = () => {
+            metrics.forEach(metric => {
+                const rect = metric.getBoundingClientRect();
+                if (rect.top < window.innerHeight && rect.bottom >= 0 && !metric.classList.contains('animated')) {
+                    metric.classList.add('animated');
+                    const text = metric.textContent;
+                    const numMatch = text.match(/[\d,]+/);
+                    if (numMatch) {
+                        const endValue = parseInt(numMatch[0].replace(/,/g, ''));
+                        if (!isNaN(endValue)) {
+                            animateValue(metric, 0, endValue, 2000);
+                        }
+                    }
+                }
+            });
+        };
+
+        window.addEventListener('scroll', animateMetrics);
+        setTimeout(animateMetrics, 500); // Initial check
+    </script>
 </body>
 </html>

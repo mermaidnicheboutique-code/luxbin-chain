@@ -135,6 +135,32 @@ pub struct AIComputeResult<AccountId> {
 	pub temporal_proof: H512,
 }
 
+/// Trinity Cryptography Key
+#[derive(Clone, Encode, Decode, TypeInfo, MaxEncodedLen)]
+pub struct TrinityKey {
+	/// Diamond hardware signature (LDD-enhanced)
+	pub diamond_signature: H512,
+	/// Acoustic key (from shielding waves)
+	pub acoustic_key: H256,
+	/// Temporal lock timestamp
+	pub temporal_lock: u64,
+	/// Combined trinity key
+	pub trinity_hash: H512,
+}
+
+/// Trinity Encryption Parameters
+#[derive(Clone, Encode, Decode, TypeInfo, MaxEncodedLen)]
+pub struct TrinityEncryption {
+	/// Original data hash
+	pub data_hash: H256,
+	/// Trinity key used for encryption
+	pub trinity_key: TrinityKey,
+	/// Encrypted data (simplified as hash for on-chain storage)
+	pub encrypted_data: H512,
+	/// Decryption timestamp window
+	pub valid_until: u64,
+}
+
 #[frame_support::pallet]
 pub mod pallet {
 	use super::*;
@@ -218,6 +244,28 @@ pub mod pallet {
 		OptionQuery,
 	>;
 
+	/// Storage for Trinity keys indexed by account
+	#[pallet::storage]
+	#[pallet::getter(fn trinity_keys)]
+	pub type TrinityKeys<T: Config> = StorageMap<
+		_,
+		Blake2_128Concat,
+		T::AccountId,
+		TrinityKey,
+		OptionQuery,
+	>;
+
+	/// Storage for Trinity encryptions indexed by data hash
+	#[pallet::storage]
+	#[pallet::getter(fn trinity_encryptions)]
+	pub type TrinityEncryptions<T: Config> = StorageMap<
+		_,
+		Blake2_128Concat,
+		H256, // data_hash
+		TrinityEncryption,
+		OptionQuery,
+	>;
+
 	/// Storage for AI node registrations
 	#[pallet::storage]
 	#[pallet::getter(fn ai_nodes)]
@@ -254,6 +302,12 @@ pub mod pallet {
 		AIComputeVerified { request_id: u64, node: T::AccountId, payment: BalanceOf<T> },
 		/// AI compute failed
 		AIComputeFailed { request_id: u64, reason: Vec<u8> },
+		/// Trinity key generated
+		TrinityKeyGenerated { account: T::AccountId, trinity_hash: H512 },
+		/// Data encrypted with trinity cryptography
+		TrinityEncrypted { account: T::AccountId, data_hash: H256 },
+		/// Data decrypted with trinity cryptography
+		TrinityDecrypted { account: T::AccountId, data_hash: H256 },
 	}
 
 	#[pallet::error]
@@ -284,6 +338,14 @@ pub mod pallet {
 		NotAuthorizedNode,
 		/// Request already completed
 		RequestAlreadyCompleted,
+		/// Trinity key not found
+		TrinityKeyNotFound,
+		/// Encryption expired
+		EncryptionExpired,
+		/// Invalid trinity key
+		InvalidTrinityKey,
+		/// Decryption failed
+		DecryptionFailed,
 	}
 
 	#[pallet::call]
@@ -626,20 +688,222 @@ pub mod pallet {
 
 			Ok(())
 		}
+
+		/// Generate a Trinity cryptographic key
+		///
+		/// Combines diamond hardware signature, acoustic key, and temporal lock
+		///
+		/// # Weight
+		/// O(1) - Cryptographic operations
+		#[pallet::call_index(7)]
+		#[pallet::weight(15_000)]
+		pub fn generate_trinity_key(
+			origin: OriginFor<T>,
+			acoustic_key: H256,
+		) -> DispatchResult {
+			let who = ensure_signed(origin)?;
+
+			let timestamp = T::TimeProvider::now() / 1000;
+
+			// Generate LDD-enhanced diamond signature
+			let diamond_signature = Self::generate_diamond_signature(&who, timestamp)?;
+
+			// Create temporal lock (valid for 24 hours)
+			let temporal_lock = timestamp + 86400;
+
+			// Combine all three elements
+			let trinity_hash = Self::combine_trinity_elements(
+				diamond_signature,
+				acoustic_key,
+				temporal_lock,
+			)?;
+
+			let trinity_key = TrinityKey {
+				diamond_signature,
+				acoustic_key,
+				temporal_lock,
+				trinity_hash,
+			};
+
+			// Store trinity key
+			TrinityKeys::<T>::insert(&who, trinity_key);
+
+			Self::deposit_event(Event::TrinityKeyGenerated {
+				account: who,
+				trinity_hash,
+			});
+
+			Ok(())
+		}
+
+		/// Encrypt data using Trinity cryptography
+		///
+		/// # Parameters
+		/// - `data_hash`: Hash of the data to encrypt
+		/// - `valid_duration`: How long encryption should be valid (seconds)
+		///
+		/// # Weight
+		/// O(1)
+		#[pallet::call_index(8)]
+		#[pallet::weight(10_000)]
+		pub fn trinity_encrypt(
+			origin: OriginFor<T>,
+			data_hash: H256,
+			valid_duration: u64,
+		) -> DispatchResult {
+			let who = ensure_signed(origin)?;
+
+			// Get trinity key
+			let trinity_key = TrinityKeys::<T>::get(&who)
+				.ok_or(Error::<T>::TrinityKeyNotFound)?;
+
+			let timestamp = T::TimeProvider::now() / 1000;
+			let valid_until = timestamp + valid_duration;
+
+			// Perform trinity encryption
+			let encrypted_data = Self::perform_trinity_encryption(data_hash, &trinity_key)?;
+
+			let encryption = TrinityEncryption {
+				data_hash,
+				trinity_key,
+				encrypted_data,
+				valid_until,
+			};
+
+			// Store encryption
+			TrinityEncryptions::<T>::insert(data_hash, encryption);
+
+			Self::deposit_event(Event::TrinityEncrypted {
+				account: who,
+				data_hash,
+			});
+
+			Ok(())
+		}
+
+		/// Decrypt data using Trinity cryptography
+		///
+		/// # Parameters
+		/// - `data_hash`: Hash of the data to decrypt
+		///
+		/// # Weight
+		/// O(1)
+		#[pallet::call_index(9)]
+		#[pallet::weight(10_000)]
+		pub fn trinity_decrypt(
+			origin: OriginFor<T>,
+			data_hash: H256,
+		) -> DispatchResult {
+			let who = ensure_signed(origin)?;
+
+			// Get encryption
+			let encryption = TrinityEncryptions::<T>::get(data_hash)
+				.ok_or(Error::<T>::TrinityKeyNotFound)?;
+
+			let current_time = T::TimeProvider::now() / 1000;
+
+			// Check if encryption is still valid
+			ensure!(current_time <= encryption.valid_until, Error::<T>::EncryptionExpired);
+
+			// Verify trinity key ownership
+			let stored_key = TrinityKeys::<T>::get(&who)
+				.ok_or(Error::<T>::TrinityKeyNotFound)?;
+			ensure!(stored_key.trinity_hash == encryption.trinity_key.trinity_hash, Error::<T>::InvalidTrinityKey);
+
+			// Perform decryption verification
+			Self::verify_trinity_decryption(data_hash, &encryption)?;
+
+			Self::deposit_event(Event::TrinityDecrypted {
+				account: who,
+				data_hash,
+			});
+
+			Ok(())
+		}
 	}
 }
 
 impl<T: Config> Pallet<T> {
+	/// LDD (Lightning Diamond Device) Enhanced Key Generation
+	///
+	/// Uses diamond physics formula: Ψ(t) = C(t) · R(t) · D(t) · B(t) · I(t)
+	/// Where:
+	/// - C = Diamond Stability (carbon lattice integrity)
+	/// - R = Quartz Resonance (vibrational frequency)
+	/// - D = Defect Entropy (NV center defects)
+	/// - B = Boundary Coupling (interface energy)
+	/// - I = Interface Diffusion (atomic diffusion)
+	///
+	/// # Returns
+	/// LDD-enhanced cryptographic key
+	fn compute_ldd_key(timestamp: u64, base_key: H512) -> H512 {
+		// Simulate diamond physics parameters
+		let c_stability = Self::diamond_stability(timestamp);
+		let r_resonance = Self::quartz_resonance(timestamp);
+		let d_entropy = Self::defect_entropy(base_key);
+		let b_coupling = Self::boundary_coupling(base_key);
+		let i_diffusion = Self::interface_diffusion(timestamp, base_key);
+
+		// Combine using LDD formula
+		let psi = c_stability * r_resonance * d_entropy * b_coupling * i_diffusion;
+
+		// Convert to key
+		let mut hasher = Sha3_512::new();
+		hasher.update(&psi.to_le_bytes());
+		hasher.update(base_key.as_bytes());
+		let result = hasher.finalize();
+
+		H512::from_slice(&result[..])
+	}
+
+	/// Diamond stability factor (simulated)
+	fn diamond_stability(timestamp: u64) -> f64 {
+		// Simulate carbon lattice stability over time
+		let base_stability = 0.99; // 99% stable
+		let degradation = (timestamp % 86400) as f64 / 86400.0 * 0.01; // Daily cycle
+		base_stability - degradation
+	}
+
+	/// Quartz resonance factor (simulated)
+	fn quartz_resonance(timestamp: u64) -> f64 {
+		// Simulate crystal resonance frequency
+		let base_freq = 32.768; // kHz
+		let variation = ((timestamp % 1000) as f64 / 1000.0).sin() * 0.01;
+		base_freq + variation
+	}
+
+	/// Defect entropy from key hash
+	fn defect_entropy(key: H512) -> f64 {
+		// Use key bytes to simulate defect density
+		let sum: u32 = key.as_bytes().iter().map(|&b| b as u32).sum();
+		(sum as f64 / (64.0 * 255.0)) * 2.0 - 1.0 // Normalize to [-1, 1]
+	}
+
+	/// Boundary coupling energy
+	fn boundary_coupling(key: H512) -> f64 {
+		// Simulate interface coupling
+		let first_byte = key.as_bytes()[0] as f64;
+		first_byte / 255.0 * 2.0 + 0.5 // [0.5, 2.5]
+	}
+
+	/// Interface diffusion rate
+	fn interface_diffusion(timestamp: u64, key: H512) -> f64 {
+		let time_factor = (timestamp % 3600) as f64 / 3600.0;
+		let key_factor = key.as_bytes()[1] as f64 / 255.0;
+		time_factor * key_factor + 0.1
+	}
+
 	/// Core temporal key generation algorithm
 	///
 	/// # Process:
 	/// 1. Convert timestamp to binary
 	/// 2. Encode phrase using LUXBIN photonic encoding
 	/// 3. Combine time binary + photonic binary
-	/// 4. Hash with SHA3-512
+	/// 4. Hash with SHA3-512 to get base key
+	/// 5. Apply LDD enhancement
 	///
 	/// # Returns
-	/// 512-bit temporal cryptographic key
+	/// 512-bit LDD-enhanced temporal cryptographic key
 	fn compute_temporal_key(timestamp: u64, phrase: &[u8]) -> Result<H512, Error<T>> {
 		// 1. Time to binary
 		let time_binary = Self::timestamp_to_binary(timestamp);
@@ -651,12 +915,15 @@ impl<T: Config> Pallet<T> {
 		let mut combined = time_binary;
 		combined.extend_from_slice(&photonic_data.binary);
 
-		// 4. Hash with SHA3-512
+		// 4. Hash with SHA3-512 to get base key
 		let mut hasher = Sha3_512::new();
 		hasher.update(&combined);
-		let result = hasher.finalize();
+		let base_key = H512::from_slice(&hasher.finalize()[..]);
 
-		Ok(H512::from_slice(&result[..]))
+		// 5. Apply LDD enhancement
+		let ldd_key = Self::compute_ldd_key(timestamp, base_key);
+
+		Ok(ldd_key)
 	}
 
 	/// Convert timestamp to binary representation
@@ -800,6 +1067,59 @@ impl<T: Config> Pallet<T> {
 		proof_hasher.update(output_hmac.as_bytes());
 		let proof_result = proof_hasher.finalize();
 		Ok(H512::from_slice(&proof_result[..]))
+	}
+
+	/// Generate diamond hardware signature using LDD
+	fn generate_diamond_signature<AccountId>(account: &AccountId, timestamp: u64) -> Result<H512, Error<T>>
+	where
+		AccountId: Encode,
+	{
+		let mut data = Vec::new();
+		account.encode_to(&mut data);
+		data.extend_from_slice(&timestamp.to_le_bytes());
+
+		// Apply LDD enhancement
+		let base_key = Self::compute_ldd_key(timestamp, H512::from_slice(&Sha3_512::digest(&data)[..]));
+
+		Ok(base_key)
+	}
+
+	/// Combine diamond, acoustic, and temporal elements into trinity hash
+	fn combine_trinity_elements(
+		diamond_signature: H512,
+		acoustic_key: H256,
+		temporal_lock: u64,
+	) -> Result<H512, Error<T>> {
+		let mut combined = Vec::new();
+		combined.extend_from_slice(diamond_signature.as_bytes());
+		combined.extend_from_slice(acoustic_key.as_bytes());
+		combined.extend_from_slice(&temporal_lock.to_le_bytes());
+
+		let mut hasher = Sha3_512::new();
+		hasher.update(&combined);
+		let result = hasher.finalize();
+
+		Ok(H512::from_slice(&result[..]))
+	}
+
+	/// Perform trinity encryption
+	fn perform_trinity_encryption(data_hash: H256, trinity_key: &TrinityKey) -> Result<H512, Error<T>> {
+		let mut combined = Vec::new();
+		combined.extend_from_slice(data_hash.as_bytes());
+		combined.extend_from_slice(trinity_key.trinity_hash.as_bytes());
+
+		let mut hasher = Sha3_512::new();
+		hasher.update(&combined);
+		let result = hasher.finalize();
+
+		Ok(H512::from_slice(&result[..]))
+	}
+
+	/// Verify trinity decryption
+	fn verify_trinity_decryption(data_hash: H256, encryption: &TrinityEncryption) -> Result<(), Error<T>> {
+		let computed_encrypted = Self::perform_trinity_encryption(data_hash, &encryption.trinity_key)?;
+		ensure!(computed_encrypted == encryption.encrypted_data, Error::<T>::DecryptionFailed);
+		Ok(())
 	}
 
 	// ============================================================================

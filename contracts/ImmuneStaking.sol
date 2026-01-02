@@ -2,7 +2,7 @@
 pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
@@ -13,19 +13,20 @@ interface ILuxbinToken is IERC20 {
 interface IImmuneCell is IERC721 {
     enum CellType { DETECTOR, DEFENDER, MEMORY, REGULATORY }
 
-    function getCell(uint256 tokenId) external view returns (
-        CellType cellType,
-        uint256 reputation,
-        uint256 truePositives,
-        uint256 falsePositives,
-        uint256 threatsDetected,
-        uint256 responsesExecuted,
-        uint256 createdAt,
-        uint256 lastActiveAt,
-        bool isActive,
-        string memory quantumFingerprint
-    );
+    struct CellData {
+        CellType cellType;
+        uint256 reputation;
+        uint256 truePositives;
+        uint256 falsePositives;
+        uint256 threatsDetected;
+        uint256 responsesExecuted;
+        uint256 createdAt;
+        uint256 lastActiveAt;
+        bool isActive;
+        string quantumFingerprint;
+    }
 
+    function getCell(uint256 tokenId) external view returns (CellData memory);
     function recordThreatDetection(uint256 tokenId) external;
     function recordFalsePositive(uint256 tokenId) external;
     function recordResponse(uint256 tokenId) external;
@@ -33,8 +34,7 @@ interface IImmuneCell is IERC721 {
 
 /**
  * @title ImmuneStaking
- * @dev Staking contract for LUXBIN immune system
- * Validators stake LUXBIN tokens and immune cell NFTs to participate in network security
+ * @dev Staking contract for LUXBIN immune system (OpenZeppelin v5.x compatible)
  */
 contract ImmuneStaking is Ownable, ReentrancyGuard {
     ILuxbinToken public luxbinToken;
@@ -56,7 +56,7 @@ contract ImmuneStaking is Ownable, ReentrancyGuard {
         uint256 rewardsEarned;
         uint256 penaltiesPaid;
         bool isActive;
-        uint256[] stakedCells; // NFT token IDs
+        uint256[] stakedCells;
     }
 
     mapping(address => Validator) public validators;
@@ -75,7 +75,7 @@ contract ImmuneStaking is Ownable, ReentrancyGuard {
     event ThreatReported(address indexed reporter, uint256 indexed cellId, bytes32 threatHash);
     event DefenseExecuted(address indexed executor, uint256 indexed cellId, bytes32 targetHash);
 
-    constructor(address _luxbinToken, address _immuneCell) {
+    constructor(address _luxbinToken, address _immuneCell) Ownable(msg.sender) {
         require(_luxbinToken != address(0), "Invalid token address");
         require(_immuneCell != address(0), "Invalid immune cell address");
 
@@ -85,7 +85,6 @@ contract ImmuneStaking is Ownable, ReentrancyGuard {
 
     /**
      * @dev Stake LUXBIN tokens to become a validator
-     * @param amount Amount of tokens to stake
      */
     function stake(uint256 amount) public nonReentrant {
         require(amount >= MIN_STAKE, "Amount below minimum stake");
@@ -97,7 +96,6 @@ contract ImmuneStaking is Ownable, ReentrancyGuard {
         Validator storage validator = validators[msg.sender];
 
         if (validator.stakedAmount == 0) {
-            // New validator
             validatorList.push(msg.sender);
             validator.stakedAt = block.timestamp;
         }
@@ -110,7 +108,6 @@ contract ImmuneStaking is Ownable, ReentrancyGuard {
 
     /**
      * @dev Stake an immune cell NFT
-     * @param tokenId Token ID of the immune cell
      */
     function stakeCell(uint256 tokenId) public {
         require(validators[msg.sender].stakedAmount >= MIN_STAKE, "Must stake tokens first");
@@ -127,13 +124,10 @@ contract ImmuneStaking is Ownable, ReentrancyGuard {
 
     /**
      * @dev Unstake LUXBIN tokens
-     * @param amount Amount to unstake
      */
     function unstake(uint256 amount) public nonReentrant {
         Validator storage validator = validators[msg.sender];
         require(validator.stakedAmount >= amount, "Insufficient staked amount");
-
-        // Must unstake all cells first
         require(validator.stakedCells.length == 0, "Must unstake all cells first");
 
         validator.stakedAmount -= amount;
@@ -149,7 +143,6 @@ contract ImmuneStaking is Ownable, ReentrancyGuard {
 
     /**
      * @dev Unstake an immune cell NFT
-     * @param tokenId Token ID of the immune cell
      */
     function unstakeCell(uint256 tokenId) public {
         require(stakedCellOwner[tokenId] == msg.sender, "Not the staker of this cell");
@@ -172,19 +165,15 @@ contract ImmuneStaking is Ownable, ReentrancyGuard {
     }
 
     /**
-     * @dev Report a threat detection (called by immune system)
-     * @param cellId Token ID of the detector cell
-     * @param threatHash Hash of the threat data
+     * @dev Report a threat detection
      */
     function reportThreat(uint256 cellId, bytes32 threatHash) public onlyOwner {
         address validator = stakedCellOwner[cellId];
         require(validator != address(0), "Cell not staked");
         require(validators[validator].isActive, "Validator not active");
 
-        // Update cell stats
         immuneCell.recordThreatDetection(cellId);
 
-        // Pay reward
         validators[validator].rewardsEarned += DETECTION_REWARD;
         luxbinToken.mint(validator, DETECTION_REWARD);
 
@@ -193,17 +182,14 @@ contract ImmuneStaking is Ownable, ReentrancyGuard {
     }
 
     /**
-     * @dev Record a false positive (called by immune system)
-     * @param cellId Token ID of the detector cell
+     * @dev Record a false positive
      */
     function reportFalsePositive(uint256 cellId) public onlyOwner {
         address validator = stakedCellOwner[cellId];
         require(validator != address(0), "Cell not staked");
 
-        // Update cell stats
         immuneCell.recordFalsePositive(cellId);
 
-        // Apply penalty
         Validator storage val = validators[validator];
 
         if (val.stakedAmount >= FALSE_POSITIVE_PENALTY) {
@@ -215,7 +201,6 @@ contract ImmuneStaking is Ownable, ReentrancyGuard {
 
             emit PenaltyApplied(validator, FALSE_POSITIVE_PENALTY, "False positive");
 
-            // Deactivate if stake falls below minimum
             if (val.stakedAmount < MIN_STAKE) {
                 val.isActive = false;
             }
@@ -223,14 +208,12 @@ contract ImmuneStaking is Ownable, ReentrancyGuard {
     }
 
     /**
-     * @dev Record memory storage (called by immune system)
-     * @param cellId Token ID of the memory cell
+     * @dev Record memory storage
      */
     function recordMemoryStorage(uint256 cellId) public onlyOwner {
         address validator = stakedCellOwner[cellId];
         require(validator != address(0), "Cell not staked");
 
-        // Pay reward
         validators[validator].rewardsEarned += MEMORY_REWARD;
         luxbinToken.mint(validator, MEMORY_REWARD);
 
@@ -238,14 +221,12 @@ contract ImmuneStaking is Ownable, ReentrancyGuard {
     }
 
     /**
-     * @dev Record regulatory approval (called by immune system)
-     * @param cellId Token ID of the regulatory cell
+     * @dev Record regulatory approval
      */
     function recordRegulatoryApproval(uint256 cellId) public onlyOwner {
         address validator = stakedCellOwner[cellId];
         require(validator != address(0), "Cell not staked");
 
-        // Pay reward
         validators[validator].rewardsEarned += REGULATORY_REWARD;
         luxbinToken.mint(validator, REGULATORY_REWARD);
 
@@ -253,15 +234,12 @@ contract ImmuneStaking is Ownable, ReentrancyGuard {
     }
 
     /**
-     * @dev Record defense execution (called by immune system)
-     * @param cellId Token ID of the defender cell
-     * @param targetHash Hash of the target address
+     * @dev Record defense execution
      */
     function recordDefense(uint256 cellId, bytes32 targetHash) public onlyOwner {
         address validator = stakedCellOwner[cellId];
         require(validator != address(0), "Cell not staked");
 
-        // Update cell stats
         immuneCell.recordResponse(cellId);
 
         emit DefenseExecuted(validator, cellId, targetHash);
@@ -269,7 +247,6 @@ contract ImmuneStaking is Ownable, ReentrancyGuard {
 
     /**
      * @dev Get validator information
-     * @param validatorAddress Address of the validator
      */
     function getValidator(address validatorAddress)
         public
@@ -296,7 +273,6 @@ contract ImmuneStaking is Ownable, ReentrancyGuard {
 
     /**
      * @dev Get staked cells for a validator
-     * @param validatorAddress Address of the validator
      */
     function getStakedCells(address validatorAddress)
         public

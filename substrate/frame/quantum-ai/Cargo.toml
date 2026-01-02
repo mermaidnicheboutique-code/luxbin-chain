@@ -1,0 +1,56 @@
+[package]
+name = "pallet-quantum-ai"
+version = "1.0.0"
+authors = ["Nichole Christie <nicholechristie555@gmail.com>"]
+edition = "2021"
+license = "Apache-2.0"
+homepage = "https://github.com/nichechristie/luxbin-chain"
+repository = "https://github.com/nichechristie/luxbin-chain"
+description = "LUXBIN Quantum AI Pallet - Interactive quantum threat prediction, neural analysis, energy optimization, and quantum eyes visualization"
+
+[package.metadata.docs.rs]
+targets = ["x86_64-unknown-linux-gnu"]
+
+[dependencies]
+codec = { package = "parity-scale-codec", version = "3.6.12", default-features = false, features = ["derive"] }
+scale-info = { version = "2.11.1", default-features = false, features = ["derive"] }
+
+# Substrate dependencies
+frame-benchmarking = { path = "../benchmarking", default-features = false, optional = true }
+frame-support = { path = "../support", default-features = false }
+frame-system = { path = "../system", default-features = false }
+sp-runtime = { path = "../../primitives/runtime", default-features = false }
+sp-std = { path = "../../primitives/std", default-features = false }
+sp-core = { path = "../../primitives/core", default-features = false }
+sp-io = { path = "../../primitives/io", default-features = false }
+
+# LUXBIN pallets
+pallet-temporal-crypto = { path = "../temporal-crypto", default-features = false }
+pallet-ai-compute = { path = "../ai-compute", default-features = false }
+
+# Cryptography
+sha3 = { version = "0.10", default-features = false }
+
+[dev-dependencies]
+sp-io = { path = "../../primitives/io" }
+pallet-balances = { path = "../balances" }
+pallet-timestamp = { path = "../timestamp" }
+
+[features]
+default = ["std"]
+std = [
+	"codec/std",
+	"scale-info/std",
+	"frame-benchmarking?/std",
+	"frame-support/std",
+	"frame-system/std",
+	"sp-runtime/std",
+	"sp-std/std",
+	"sp-core/std",
+	"sp-io/std",
+	"pallet-temporal-crypto/std",
+	"pallet-ai-compute/std",
+	"sha3/std",
+]
+runtime-benchmarks = ["frame-benchmarking/runtime-benchmarks"]
+try-runtime = ["frame-support/try-runtime"]

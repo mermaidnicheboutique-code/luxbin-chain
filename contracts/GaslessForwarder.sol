@@ -2,21 +2,12 @@
 pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 
 /**
  * @title GaslessForwarder
- * @dev Meta-transaction forwarder for gasless immune system operations
- *
- * This contract sponsors gas fees for:
- * - Threat detection reports
- * - Defense execution
- * - Memory storage
- * - Regulatory approvals
- *
- * Users sign transactions off-chain, relayers submit them on-chain,
- * and this contract pays the gas fees from its treasury.
+ * @dev Meta-transaction forwarder for gasless immune system operations (OpenZeppelin v5.x compatible)
  */
 contract GaslessForwarder is Ownable, ReentrancyGuard {
     using ECDSA for bytes32;
@@ -30,7 +21,7 @@ contract GaslessForwarder is Ownable, ReentrancyGuard {
     // Gas treasury balance
     uint256 public gasTreasury;
 
-    // Maximum gas price willing to pay (to prevent DoS)
+    // Maximum gas price willing to pay
     uint256 public maxGasPrice = 100 gwei;
 
     // Whitelisted target contracts
@@ -39,7 +30,7 @@ contract GaslessForwarder is Ownable, ReentrancyGuard {
     // Daily gas budget per user
     mapping(address => uint256) public dailyGasUsed;
     mapping(address => uint256) public lastGasDay;
-    uint256 public dailyGasLimit = 0.1 ether; // 0.1 ETH per user per day
+    uint256 public dailyGasLimit = 0.1 ether;
 
     // Events
     event MetaTransactionExecuted(
@@ -66,8 +57,7 @@ contract GaslessForwarder is Ownable, ReentrancyGuard {
         bytes data;
     }
 
-    constructor() {
-        // Owner is automatically an authorized relayer
+    constructor() Ownable(msg.sender) {
         authorizedRelayers[msg.sender] = true;
     }
 
@@ -80,7 +70,7 @@ contract GaslessForwarder is Ownable, ReentrancyGuard {
     }
 
     /**
-     * @dev Withdraw from gas treasury (owner only)
+     * @dev Withdraw from gas treasury
      */
     function withdrawGas(address payable to, uint256 amount) public onlyOwner {
         require(gasTreasury >= amount, "Insufficient treasury balance");
@@ -137,9 +127,7 @@ contract GaslessForwarder is Ownable, ReentrancyGuard {
     }
 
     /**
-     * @dev Verify and execute a meta-transaction
-     * @param req Forward request struct
-     * @param signature User's signature of the request
+     * @dev Execute a meta-transaction
      */
     function executeMetaTransaction(
         ForwardRequest calldata req,
@@ -180,7 +168,7 @@ contract GaslessForwarder is Ownable, ReentrancyGuard {
 
         dailyGasUsed[req.from] += gasUsed;
 
-        // Reimburse relayer from treasury (if sufficient funds)
+        // Reimburse relayer from treasury
         if (gasTreasury >= gasUsed) {
             gasTreasury -= gasUsed;
             (bool reimbursed, ) = msg.sender.call{value: gasUsed}("");
@@ -190,26 +178,6 @@ contract GaslessForwarder is Ownable, ReentrancyGuard {
         emit MetaTransactionExecuted(req.from, req.to, req.data, gasUsed, success);
 
         return (success, returndata);
-    }
-
-    /**
-     * @dev Batch execute multiple meta-transactions
-     */
-    function batchExecuteMetaTransactions(
-        ForwardRequest[] calldata requests,
-        bytes[] calldata signatures
-    ) public returns (bool[] memory, bytes[] memory) {
-        require(requests.length == signatures.length, "Length mismatch");
-        require(authorizedRelayers[msg.sender], "Not an authorized relayer");
-
-        bool[] memory successes = new bool[](requests.length);
-        bytes[] memory results = new bytes[](requests.length);
-
-        for (uint256 i = 0; i < requests.length; i++) {
-            (successes[i], results[i]) = executeMetaTransaction(requests[i], signatures[i]);
-        }
-
-        return (successes, results);
     }
 
     /**

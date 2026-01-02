@@ -226,4 +226,7 @@ mod runtime {
 
 	#[runtime::pallet_index(9)]
 	pub type AICompute = pallet_ai_compute;
+
+	#[runtime::pallet_index(10)]
+	pub type QuantumAI = pallet_quantum_ai;
 }
