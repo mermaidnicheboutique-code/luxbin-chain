@@ -28,6 +28,7 @@ export default function Home() {
             <nav className="hidden md:flex gap-6">
               {[
                 { name: "About", href: "/about" },
+                { name: "Quantum AI", href: "/quantum-ai" },
                 { name: "Research", href: "/research" },
                 { name: "Technical", href: "/technical" },
                 { name: "Chain Info", href: "#chain" },
