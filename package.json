@@ -1,0 +1,13 @@
+{
+  "name": "luxbin-chain-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "cd luxbin-app && npm run dev",
+    "build": "cd luxbin-app && npm install && npm run build",
+    "start": "cd luxbin-app && npm start"
+  },
+  "workspaces": [
+    "luxbin-app"
+  ]
+}
