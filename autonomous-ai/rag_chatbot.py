@@ -22,6 +22,7 @@ from tools.blockchain_tools import LuxbinBlockchainTools
 from tools.security_tools import LuxbinSecurityTools
 from models.ai_model_router import AIModelRouter
 from photonic_encoder import LuxbinPhotonicEncoder
+from memory.memory_manager import LuxbinMemoryManager
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -50,6 +51,7 @@ class LuxbinAutonomousAI:
         self.security_tools = LuxbinSecurityTools()
         self.ai_router = AIModelRouter()
         self.photonic_encoder = LuxbinPhotonicEncoder()
+        self.memory_manager = LuxbinMemoryManager()
 
         # Personality and memory system
         self.personality = self._load_personality()
@@ -307,6 +309,10 @@ class LuxbinAutonomousAI:
             return "\n\n📊 **Performance Metrics:**\n" + "\n".join(f"• {metric}" for metric in metrics)
         return ""
 
+    def _extract_topics_from_response(self, response: str) -> List[str]:
+        """Extract topics from AI response for learning"""
+        return self._extract_topics(response)  # Reuse existing topic extraction
+
     def add_to_history(self, role: str, content: str):
         """Add message to conversation history"""
         self.conversation_history.append({
@@ -393,10 +399,27 @@ class LuxbinAutonomousAI:
 
         return analysis
 
-    def generate_response(self, user_query: str) -> str:
-        """Generate AI response with RAG augmentation and function calling"""
-        # Add user query to history
-        self.add_to_history('user', user_query)
+    def generate_response(self, user_query: str, user_id: str = "default_user", session_id: str = None) -> str:
+        """Generate AI response with RAG augmentation, function calling, and persistent memory"""
+        # Generate session ID if not provided
+        if session_id is None:
+            session_id = f"session_{int(datetime.now().timestamp())}"
+
+        # Store user message in persistent memory
+        user_metadata = {
+            'function_calls': [],
+            'response_quality': 0.8,
+            'user_id': user_id,
+            'session_id': session_id
+        }
+        self.memory_manager.store_conversation(user_id, session_id, 'user', user_query, user_metadata)
+
+        # Get user profile and preferences
+        user_profile = self.memory_manager.get_or_create_user(user_id)
+        user_preferences = self.memory_manager.get_user_preferences(user_id)
+
+        # Search for relevant past conversations
+        relevant_history = self.memory_manager.search_conversations(user_id, user_query, limit=3)
 
         # Analyze user intent for function calling
         intent_analysis = self._analyze_user_intent(user_query)
@@ -407,6 +430,8 @@ class LuxbinAutonomousAI:
             for func_name in intent_analysis['suggested_functions']:
                 result = self._execute_function_call(func_name, intent_analysis['parameters'])
                 function_results.append(result)
+                # Track function calls in metadata
+                user_metadata['function_calls'].append(func_name)
 
         # Gather context from codebase
         context_parts = []
@@ -485,13 +510,33 @@ Always reference real code from our repository. Be the most advanced AI assistan
                 "content": f"Context from function calls and codebase:\n{context}"
             })
 
-        # Add user interests from profile
-        if self.user_profile:
-            top_interests = sorted(self.user_profile.items(), key=lambda x: x[1], reverse=True)[:3]
-            interest_str = ", ".join([f"{k} ({v})" for k, v in top_interests])
+        # Add user context from memory
+        user_context_parts = []
+
+        # Add user profile information
+        if user_profile:
+            expertise = user_profile.get('expertise_level', 'beginner')
+            user_context_parts.append(f"User expertise level: {expertise}")
+
+        # Add user preferences
+        if user_preferences:
+            top_interests = sorted(user_preferences.items(), key=lambda x: x[1] if isinstance(x[1], (int, float)) else 0, reverse=True)[:3]
+            if top_interests:
+                interest_str = ", ".join([f"{k}" for k, v in top_interests if isinstance(v, (int, float)) and v > 1])
+                if interest_str:
+                    user_context_parts.append(f"User interests: {interest_str}")
+
+        # Add relevant conversation history
+        if relevant_history:
+            history_str = "Relevant past conversations:\n"
+            for hist in relevant_history[:2]:  # Limit to 2 most relevant
+                history_str += f"• {hist['content'][:100]}...\n"
+            user_context_parts.append(history_str.strip())
+
+        if user_context_parts:
             messages.append({
                 "role": "system",
-                "content": f"User interests based on conversation: {interest_str}"
+                "content": "User Context:\n" + "\n".join(f"• {part}" for part in user_context_parts)
             })
 
         # Route to best AI model based on task complexity
@@ -538,8 +583,26 @@ Always reference real code from our repository. Be the most advanced AI assistan
         # Update user profile
         self._update_user_profile(user_query, response)
 
-        # Add response to history
-        self.add_to_history('assistant', response)
+        # Store assistant response in persistent memory
+        assistant_metadata = {
+            'function_calls': [r.get('function', '') for r in function_results if r.get('success')],
+            'response_quality': 0.85,
+            'model_used': best_model,
+            'photonic_encoded': 'photonic' in response.lower(),
+            'user_id': user_id,
+            'session_id': session_id
+        }
+        self.memory_manager.store_conversation(user_id, session_id, 'assistant', response, assistant_metadata)
+
+        # Learn from this interaction
+        interaction_data = {
+            'type': 'ai_response',
+            'topics': self._extract_topics_from_response(response),
+            'sentiment': 0.0,  # Could analyze response sentiment
+            'function_calls': assistant_metadata['function_calls'],
+            'response_quality': assistant_metadata['response_quality']
+        }
+        self.memory_manager.learn_from_interaction(user_id, interaction_data)
 
         return response
 
@@ -689,7 +752,7 @@ def main():
             if not user_input:
                 continue
 
-            response = ai.generate_response(user_input)
+            response = ai.generate_response(user_input, user_id="interactive_user", session_id="interactive_session")
             print(f"\n🤖 LUXBIN AI: {response}")
 
         except KeyboardInterrupt:
