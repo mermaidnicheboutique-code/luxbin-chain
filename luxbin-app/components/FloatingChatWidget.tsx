@@ -183,11 +183,11 @@ export function FloatingChatWidget() {
 
   return (
     <>
-      {/* Large Video Avatar Button - Centered */}
+      {/* Large Video Avatar Button - Below Arrow */}
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-1/2 left-1/2 -translate-x-1/2 translate-y-1/2 z-50 group"
+          className="fixed top-[550px] left-1/2 -translate-x-1/2 z-50 group"
           aria-label="Open chat with LUXBIN AI"
         >
           <div className="relative">
