@@ -454,7 +454,7 @@ export default function Home() {
                 <h3 className="font-bold mb-4">Resources</h3>
                 <ul className="space-y-2 text-sm text-gray-400">
                   <li><a href="https://github.com/mermaidnicheboutique-code/luxbin-chain/blob/main/luxbin-paper.pdf" target="_blank" className="hover:text-white">Whitepaper</a></li>
-                  <li><a href="https://github.com/mermaidnicheboutique-code/luxbin-chain" target="_blank" className="hover:text-white">Brand Kit</a></li>
+                  <li><Link href="/brand-kit" className="hover:text-white">Brand Kit</Link></li>
                   <li><Link href="/terms" className="hover:text-white">Terms of Service</Link></li>
                 </ul>
               </div>
