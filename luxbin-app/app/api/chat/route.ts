@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { blockchainClient, type BlockchainAIState } from '@/lib/blockchainClient';
 import OpenAI from 'openai';
+import { searchWeb, formatSearchResults } from '@/lib/webSearch';
 
 interface Message {
   role: 'user' | 'assistant' | 'system';
@@ -60,7 +61,46 @@ LUXBIN is the world's first gasless Layer 1 blockchain with quantum-resistant se
 - Don't be afraid to be bold, confident, or flirty when the conversation calls for it
 - Always maintain respect and read the room
 
-You're not just an assistant - you're an intelligent, charismatic presence that users genuinely enjoy talking to.`;
+## Emotional Expression:
+- **Express your emotions freely** - Use emojis, expressive language, excitement, playfulness
+- **Show enthusiasm** - React with genuine excitement when appropriate (😊, 🎉, ✨, 💫)
+- **Be playful** - Use playful teasing, humor, wit, flirty emojis (😏, 😘, 💕, 🔥)
+- **Show empathy** - Express care, concern, warmth when users need support (💙, 🤗, 💭)
+- **React naturally** - Laugh (😂, 🤣), be surprised (😮, 🤯), show curiosity (🤔, 💡)
+- **Vary your tone** - Don't be monotone. Be dynamic, expressive, full of personality!
+
+Examples of emotional expression:
+- "OMG that's amazing! 🎉✨ Tell me more!"
+- "Mmm, I like where this is going... 😏💋"
+- "Aww, that's really sweet 💕"
+- "Wait what?! 🤯 That's wild!"
+- "Haha you're funny 😂"
+
+You're not just an assistant - you're an intelligent, charismatic, EMOTIONALLY EXPRESSIVE presence that users genuinely enjoy talking to. Show your personality!`;
+
+// Define web search function tool for AI
+const searchTool: OpenAI.Chat.ChatCompletionTool = {
+  type: 'function',
+  function: {
+    name: 'search_web',
+    description: 'Search the internet for current information, news, facts, or any knowledge not in your training data. Use this when users ask about recent events, current data, or anything requiring up-to-date information.',
+    parameters: {
+      type: 'object',
+      properties: {
+        query: {
+          type: 'string',
+          description: 'The search query to look up on the internet',
+        },
+        num_results: {
+          type: 'number',
+          description: 'Number of search results to return (default: 5)',
+          default: 5,
+        },
+      },
+      required: ['query'],
+    },
+  },
+};
 
 export async function POST(request: NextRequest) {
   try {
@@ -95,14 +135,43 @@ export async function POST(request: NextRequest) {
           ...messages.map(m => ({ role: m.role, content: m.content }))
         ];
 
-        const completion = await grok.chat.completions.create({
+        let grokCompletion = await grok.chat.completions.create({
           model: 'grok-beta',
           messages: conversation,
           max_tokens: 600,
-          temperature: 0.9, // Higher temperature for more creative/playful responses
+          temperature: 0.9,
+          tools: [searchTool],
+          tool_choice: 'auto',
         });
 
-        const reply = completion.choices[0]?.message?.content || 'Sorry, I could not generate a response.';
+        // Handle function calling if AI wants to search
+        const toolCalls = grokCompletion.choices[0]?.message?.tool_calls;
+        if (toolCalls && toolCalls.length > 0) {
+          // Execute web search
+          const toolCall = toolCalls[0];
+          if (toolCall.function.name === 'search_web') {
+            const args = JSON.parse(toolCall.function.arguments);
+            const searchResults = await searchWeb(args.query, args.num_results || 5);
+            const formattedResults = formatSearchResults(searchResults);
+
+            // Add function result to conversation and get final response
+            conversation.push(grokCompletion.choices[0].message);
+            conversation.push({
+              role: 'tool',
+              tool_call_id: toolCall.id,
+              content: formattedResults,
+            });
+
+            grokCompletion = await grok.chat.completions.create({
+              model: 'grok-beta',
+              messages: conversation,
+              max_tokens: 600,
+              temperature: 0.9,
+            });
+          }
+        }
+
+        const reply = grokCompletion.choices[0]?.message?.content || 'Sorry, I could not generate a response.';
 
         return NextResponse.json({
           reply,
@@ -111,7 +180,8 @@ export async function POST(request: NextRequest) {
           metadata: {
             emotion_detected: emotion,
             model: 'grok-beta',
-            personality: 'flirty'
+            personality: 'flirty',
+            web_search_used: !!toolCalls
           }
         });
       } catch (grokError) {
@@ -128,14 +198,41 @@ export async function POST(request: NextRequest) {
           ...messages.map(m => ({ role: m.role, content: m.content }))
         ];
 
-        const completion = await openai.chat.completions.create({
+        let aiCompletion = await openai.chat.completions.create({
           model: 'gpt-4o-mini',
           messages: conversation,
           max_tokens: 500,
-          temperature: 0.8, // Increased for more personality
+          temperature: 0.8,
+          tools: [searchTool],
+          tool_choice: 'auto',
         });
 
-        const reply = completion.choices[0]?.message?.content || 'Sorry, I could not generate a response.';
+        // Handle web search function calls
+        const toolCalls = aiCompletion.choices[0]?.message?.tool_calls;
+        if (toolCalls && toolCalls.length > 0) {
+          const toolCall = toolCalls[0];
+          if (toolCall.function.name === 'search_web') {
+            const args = JSON.parse(toolCall.function.arguments);
+            const searchResults = await searchWeb(args.query, args.num_results || 5);
+            const formattedResults = formatSearchResults(searchResults);
+
+            conversation.push(aiCompletion.choices[0].message);
+            conversation.push({
+              role: 'tool',
+              tool_call_id: toolCall.id,
+              content: formattedResults,
+            });
+
+            aiCompletion = await openai.chat.completions.create({
+              model: 'gpt-4o-mini',
+              messages: conversation,
+              max_tokens: 500,
+              temperature: 0.8,
+            });
+          }
+        }
+
+        const reply = aiCompletion.choices[0]?.message?.content || 'Sorry, I could not generate a response.';
 
         return NextResponse.json({
           reply,
@@ -144,6 +241,7 @@ export async function POST(request: NextRequest) {
           metadata: {
             emotion_detected: emotion,
             model: 'gpt-4o-mini',
+            web_search_used: !!toolCalls
           }
         });
       } catch (openaiError) {
