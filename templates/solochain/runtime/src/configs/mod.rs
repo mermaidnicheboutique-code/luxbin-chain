@@ -213,3 +213,10 @@ impl pallet_quantum_ai::Config for Runtime {
 	type MaxQuantumEyesEntries = MaxQuantumEyesEntries;
 	type ThreatAlertThreshold = ThreatAlertThreshold;
 }
+
+/// Configure the LUXBIN Acoustic Shielding pallet
+impl pallet_acoustic_shielding::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type TimeProvider = pallet_timestamp::Pallet<Runtime>;
+	type Currency = Balances;
+}

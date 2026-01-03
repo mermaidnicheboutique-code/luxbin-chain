@@ -66,6 +66,7 @@ pallet-template = { workspace = true }
 pallet-temporal-crypto = { path = "../../../substrate/frame/temporal-crypto", default-features = false }
 pallet-ai-compute = { path = "../../../substrate/frame/ai-compute", default-features = false }
 pallet-quantum-ai = { path = "../../../substrate/frame/quantum-ai", default-features = false }
+pallet-acoustic-shielding = { path = "../../../substrate/frame/acoustic-shielding", default-features = false }
 
 [build-dependencies]
 substrate-wasm-builder = { optional = true, workspace = true, default-features = true }
@@ -90,6 +91,7 @@ std = [
 	"pallet-temporal-crypto/std",
 	"pallet-ai-compute/std",
 	"pallet-quantum-ai/std",
+	"pallet-acoustic-shielding/std",
 	"pallet-timestamp/std",
 	"pallet-transaction-payment-rpc-runtime-api/std",
 	"pallet-transaction-payment/std",
