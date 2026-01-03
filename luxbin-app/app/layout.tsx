@@ -12,6 +12,7 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "LUXBIN - Quantum-Secured Blockchain Token",
   description: "LUXBIN (LUX) combines quantum cryptography, physics-based consensus, and biological security patterns. Live on Base Network.",
+  manifest: '/manifest.json',
   other: {
     'base:app_id': '695963dcc63ad876c9081f62',
   },
