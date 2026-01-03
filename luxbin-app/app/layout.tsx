@@ -12,6 +12,9 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "LUXBIN - Quantum-Secured Blockchain Token",
   description: "LUXBIN (LUX) combines quantum cryptography, physics-based consensus, and biological security patterns. Live on Base Network.",
+  other: {
+    'base:app_id': '695963dcc63ad876c9081f62',
+  },
 };
 
 export default function RootLayout({
@@ -22,7 +25,6 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <meta name="base:app_id" content="695963dcc63ad876c9081f62" />
         <script
           dangerouslySetInnerHTML={{
             __html: `
