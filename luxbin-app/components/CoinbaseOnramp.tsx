@@ -4,8 +4,15 @@
 
 export function CoinbaseOnramp() {
   const handleBuyClick = () => {
-    // Coinbase Onramp widget URL with LUXBIN token address on Base network
-    const onrampUrl = `https://pay.coinbase.com/buy/select-asset?appId=luxbin-app&addresses={"0x66b4627B4Dd73228D24f24E844B6094091875169":["base"]}&assets=["USDC","ETH"]&defaultNetwork=base`;
+    // Coinbase Pay URL with proper encoding
+    const destinationWallets = encodeURIComponent(JSON.stringify([{
+      address: "0x66b4627B4Dd73228D24f24E844B6094091875169",
+      blockchains: ["base"]
+    }]));
+
+    const assets = encodeURIComponent(JSON.stringify(["USDC", "ETH"]));
+
+    const onrampUrl = `https://pay.coinbase.com/buy?appId=luxbin-app&destinationWallets=${destinationWallets}&assets=${assets}&defaultNetwork=base`;
 
     window.open(onrampUrl, '_blank', 'width=500,height=700');
   };
