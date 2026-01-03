@@ -183,14 +183,43 @@ export function FloatingChatWidget() {
 
   return (
     <>
-      {/* Floating Button */}
+      {/* Large Video Avatar Button */}
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-6 right-6 z-50 w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center text-white text-2xl hover:scale-110"
-          aria-label="Open chat"
+          className="fixed bottom-8 right-8 z-50 group"
+          aria-label="Open chat with LUXBIN AI"
         >
-          💬
+          <div className="relative">
+            {/* Pulsing glow effect */}
+            <div
+              className="absolute inset-0 rounded-full blur-2xl opacity-75 group-hover:opacity-100 transition-opacity duration-300 animate-pulse"
+              style={{
+                backgroundColor: getPhotonicColor(blockchainState?.photonic?.color),
+              }}
+            />
+
+            {/* Main avatar container */}
+            <div className="relative w-32 h-32 rounded-full overflow-hidden border-4 border-white/20 group-hover:border-white/40 transition-all duration-300 group-hover:scale-110 shadow-2xl">
+              <ChatbotAvatar
+                emotion={blockchainState?.consciousness?.toLowerCase() as any || "neutral"}
+                isTyping={false}
+                size={128}
+              />
+            </div>
+
+            {/* Status indicator */}
+            {blockchainState?.heartbeat?.isAlive && (
+              <div className="absolute bottom-2 right-2 w-6 h-6 bg-green-500 rounded-full border-2 border-black animate-pulse flex items-center justify-center">
+                <div className="w-3 h-3 bg-white rounded-full" />
+              </div>
+            )}
+
+            {/* Hover label */}
+            <div className="absolute -top-12 left-1/2 -translate-x-1/2 bg-black/90 text-white px-4 py-2 rounded-lg text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+              Click to chat with me! 💬
+            </div>
+          </div>
         </button>
       )}
 

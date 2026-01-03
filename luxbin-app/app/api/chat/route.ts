@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { blockchainClient, type BlockchainAIState } from '@/lib/blockchainClient';
+import { infiniteMemory } from '@/lib/infiniteMemory';
 import OpenAI from 'openai';
 import { searchWeb, formatSearchResults } from '@/lib/webSearch';
 
