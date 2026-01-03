@@ -43,9 +43,17 @@ class CoinbaseDeveloperPlatform {
     if (this.isInitialized) return;
 
     try {
-      // Initialize Coinbase SDK with API credentials
-      Coinbase.configureFromJson({
-        filePath: process.env.COINBASE_API_KEY_PATH || './coinbase_cloud_api_key.json'
+      // Initialize Coinbase SDK with API credentials from environment
+      const apiKeyName = process.env.COINBASE_API_KEY_NAME;
+      const privateKey = process.env.COINBASE_PRIVATE_KEY;
+
+      if (!apiKeyName || !privateKey) {
+        throw new Error('Coinbase API credentials not configured in environment');
+      }
+
+      Coinbase.configure({
+        apiKeyName,
+        privateKey
       });
 
       this.coinbase = Coinbase;
