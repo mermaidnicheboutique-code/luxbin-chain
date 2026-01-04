@@ -48,10 +48,9 @@ export function CoinbasePaymasterStatus() {
     checkPaymaster();
   }, []);
 
-  if (!isConnected) return null;
-
+  // Always show the widget, even when wallet is not connected
   return (
-    <div className="fixed bottom-4 right-4 bg-gradient-to-br from-purple-900/90 to-blue-900/90 backdrop-blur-xl border border-purple-500/30 rounded-2xl p-6 shadow-2xl shadow-purple-500/20 max-w-sm z-50">
+    <div className="fixed bottom-24 right-4 bg-gradient-to-br from-purple-900/90 to-blue-900/90 backdrop-blur-xl border border-purple-500/30 rounded-2xl p-6 shadow-2xl shadow-purple-500/20 max-w-sm z-[9999]">
       <div className="flex items-center gap-3 mb-4">
         <div className={`w-3 h-3 rounded-full ${paymasterActive ? 'bg-green-400 animate-pulse' : 'bg-gray-400'}`} />
         <h3 className="text-lg font-bold text-white">Coinbase Paymaster</h3>
@@ -91,7 +90,7 @@ export function CoinbasePaymasterStatus() {
           </div>
         </div>
 
-        {balance && (
+        {isConnected && balance && (
           <div className="border-t border-purple-500/20 pt-3 mt-3">
             <div className="text-xs text-gray-400 mb-2">Your Wallet</div>
             <div className="flex justify-between items-center">
@@ -99,6 +98,15 @@ export function CoinbasePaymasterStatus() {
               <span className="font-semibold text-white">
                 {parseFloat(balance.formatted).toFixed(4)} {balance.symbol}
               </span>
+            </div>
+          </div>
+        )}
+
+        {!isConnected && (
+          <div className="border-t border-purple-500/20 pt-3 mt-3">
+            <div className="text-xs text-gray-400 mb-2">Wallet Status</div>
+            <div className="text-sm text-gray-300">
+              Connect wallet to see balance
             </div>
           </div>
         )}
