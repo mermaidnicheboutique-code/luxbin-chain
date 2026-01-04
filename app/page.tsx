@@ -6,7 +6,8 @@ import { LuxbinSwap } from "@/components/LuxbinSwap";
 import { CoinbaseOnramp } from "@/components/CoinbaseOnramp";
 import { LuxbinTokenLogoRotating, LuxbinTokenLogo } from "@/components/AnimatedTokenLogo";
 import { FloatingChatWidget } from "@/components/FloatingChatWidget";
-import { CoinbasePaymasterStatus } from "@/components/CoinbasePaymasterStatus";
+import { TokenDeployer } from "@/components/TokenDeployer";
+import { NFTDeployer } from "@/components/NFTDeployer";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 
@@ -34,6 +35,7 @@ export default function Home() {
                 { name: "Research", href: "/research" },
                 { name: "Chain Info", href: "#chain" },
                 { name: "Buy", href: "#buy" },
+                { name: "Deploy", href: "#deploy" },
                 { name: "Mirror", href: "/mirror" },
                 { name: "Developers", href: "/developers" },
                 { name: "API", href: "/api-docs" }
@@ -384,6 +386,31 @@ export default function Home() {
           </div>
         </section>
 
+        {/* Deploy Section */}
+        <section id="deploy" className="relative px-6 py-20 bg-gradient-to-b from-purple-900/10 to-transparent">
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center mb-12">
+              <h2 className="text-4xl font-bold mb-4 bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+                Deploy to LUXBIN Chain
+              </h2>
+              <p className="text-gray-400 text-lg">Create your own tokens and NFT collections with zero gas fees</p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-8">
+              <TokenDeployer />
+              <NFTDeployer />
+            </div>
+
+            <div className="mt-8 bg-gradient-to-r from-cyan-500/10 to-purple-500/10 border border-cyan-500/30 rounded-2xl p-6 text-center">
+              <p className="text-cyan-200">
+                <strong>💰 $1,250 in Coinbase Developer Credits</strong>
+                <br />
+                <span className="text-sm text-gray-300">All deployments are gasless and sponsored by Coinbase Paymaster</span>
+              </p>
+            </div>
+          </div>
+        </section>
+
         {/* Features */}
         <section className="relative px-6 py-20">
           <div className="max-w-6xl mx-auto">
@@ -485,7 +512,6 @@ export default function Home() {
 
       {/* AI Chatbot with Animated Avatar */}
       <FloatingChatWidget />
-      <CoinbasePaymasterStatus />
     </div>
   );
 }
