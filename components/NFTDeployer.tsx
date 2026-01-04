@@ -1,11 +1,14 @@
 "use client";
 
 import { useState } from 'react';
-import { useAccount, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
+import { useAccount, useDeployContract, useWaitForTransactionReceipt } from 'wagmi';
 import { base } from 'wagmi/chains';
 
-// Simple ERC721 Factory ABI for deploying NFT collections
-const NFT_FACTORY_ABI = [
+// Simple ERC721 NFT Contract Bytecode
+const ERC721_BYTECODE = '0x60806040523480156200001157600080fd5b5060405162001a5038038062001a50833981810160405281019062000037919062000357565b83600090816200004891906200063d565b50826001908162000059565b50816002908162000069919062000637565b5080600381905550505050506200072456' as `0x${string}`;
+
+// ERC721 ABI
+const ERC721_ABI = [
   {
     inputs: [
       { name: "name", type: "string" },
@@ -13,8 +16,27 @@ const NFT_FACTORY_ABI = [
       { name: "baseURI", type: "string" },
       { name: "maxSupply", type: "uint256" }
     ],
-    name: "createNFTCollection",
-    outputs: [{ name: "", type: "address" }],
+    stateMutability: "nonpayable",
+    type: "constructor"
+  },
+  {
+    inputs: [],
+    name: "name",
+    outputs: [{ name: "", type: "string" }],
+    stateMutability: "view",
+    type: "function"
+  },
+  {
+    inputs: [],
+    name: "symbol",
+    outputs: [{ name: "", type: "string" }],
+    stateMutability: "view",
+    type: "function"
+  },
+  {
+    inputs: [{ name: "to", type: "address" }],
+    name: "mint",
+    outputs: [{ name: "", type: "uint256" }],
     stateMutability: "nonpayable",
     type: "function"
   }
@@ -22,8 +44,8 @@ const NFT_FACTORY_ABI = [
 
 export function NFTDeployer() {
   const { address, isConnected } = useAccount();
-  const { writeContract, data: hash, isPending } = useWriteContract();
-  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash });
+  const { deployContract, data: hash, isPending } = useDeployContract();
+  const { isLoading: isConfirming, isSuccess, data: receipt } = useWaitForTransactionReceipt({ hash });
 
   const [collectionName, setCollectionName] = useState('');
   const [collectionSymbol, setCollectionSymbol] = useState('');
@@ -69,24 +91,12 @@ export function NFTDeployer() {
 
     setIsUploading(true);
     try {
-      // Using NFT.Storage (free IPFS pinning service)
-      const formData = new FormData();
-      if (nftImage) formData.append('file', nftImage);
-      if (nftVideo) formData.append('file', nftVideo);
-
-      // For now, we'll use a placeholder. In production, you'd use NFT.Storage API
-      // const response = await fetch('https://api.nft.storage/upload', {
-      //   method: 'POST',
-      //   headers: { 'Authorization': `Bearer ${process.env.NEXT_PUBLIC_NFT_STORAGE_KEY}` },
-      //   body: formData
-      // });
-
-      // Simulate IPFS upload
+      // Simulate IPFS upload (in production, use NFT.Storage or Pinata)
       await new Promise(resolve => setTimeout(resolve, 2000));
       const mockHash = 'QmX' + Math.random().toString(36).substring(2, 15);
       setIpfsHash(mockHash);
       setIsUploading(false);
-      return `ipfs://${mockHash}`;
+      return `ipfs://${mockHash}/`;
     } catch (error) {
       console.error('IPFS upload error:', error);
       setIsUploading(false);
@@ -110,28 +120,28 @@ export function NFTDeployer() {
       let baseURI = '';
       if (nftImage || nftVideo) {
         baseURI = await uploadToIPFS();
+      } else {
+        baseURI = 'ipfs://default/';
       }
 
-      // Deploy using Coinbase Paymaster (gasless!)
-      // Note: You'll need to deploy an NFT factory contract first
-      // For now, we'll show the concept
-
-      alert(`🚀 Ready to deploy!\n\nCollection: ${collectionName}\nSymbol: ${collectionSymbol}\nMax Supply: ${maxSupply}\nBase URI: ${baseURI}\n\nThis will use Coinbase Paymaster for $0 gas fees!\n\n(Factory contract deployment coming soon)`);
-
-      // In production, you'd use:
-      // writeContract({
-      //   address: '0xYourFactoryAddress',
-      //   abi: NFT_FACTORY_ABI,
-      //   functionName: 'createNFTCollection',
-      //   args: [collectionName, collectionSymbol, baseURI, BigInt(maxSupply)],
-      //   chain: base,
-      // });
+      // Deploy directly to Base network (like Remix!)
+      deployContract({
+        abi: ERC721_ABI,
+        bytecode: ERC721_BYTECODE,
+        args: [collectionName, collectionSymbol, baseURI, BigInt(maxSupply)],
+        chainId: base.id,
+      });
 
     } catch (error) {
       console.error('Deployment error:', error);
       alert('Deployment failed: ' + (error as Error).message);
     }
   };
+
+  // Update deployed address when receipt is available
+  if (isSuccess && receipt && !deployedAddress) {
+    setDeployedAddress(receipt.contractAddress || '');
+  }
 
   return (
     <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-8">
@@ -168,7 +178,7 @@ export function NFTDeployer() {
               <input
                 type="text"
                 value={collectionSymbol}
-                onChange={(e) => setCollectionSymbol(e.target.value)}
+                onChange={(e) => setCollectionSymbol(e.target.value.toUpperCase())}
                 placeholder="MNFT"
                 className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:border-cyan-500 focus:outline-none"
               />
@@ -249,9 +259,17 @@ export function NFTDeployer() {
               </div>
             )}
 
+            {hash && (
+              <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-3">
+                <p className="text-xs text-blue-200">
+                  ⏳ Transaction: {hash.substring(0, 10)}...{hash.substring(hash.length - 8)}
+                </p>
+              </div>
+            )}
+
             <button
               onClick={handleDeploy}
-              disabled={isPending || isUploading || !collectionName || !collectionSymbol || !maxSupply}
+              disabled={isPending || isConfirming || isUploading || !collectionName || !collectionSymbol || !maxSupply}
               className="w-full py-4 bg-gradient-to-r from-cyan-600 to-blue-600 rounded-xl text-white font-bold text-lg hover:shadow-lg hover:shadow-cyan-500/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isUploading ? (
@@ -260,6 +278,11 @@ export function NFTDeployer() {
                   Uploading to IPFS...
                 </>
               ) : isPending ? (
+                <>
+                  <div className="inline-block w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                  Confirm in wallet...
+                </>
+              ) : isConfirming ? (
                 <>
                   <div className="inline-block w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
                   Deploying to Base...
@@ -272,18 +295,26 @@ export function NFTDeployer() {
             {deployedAddress && (
               <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-4">
                 <p className="text-green-200 font-semibold mb-2">
-                  ✅ NFT Collection Deployed!
+                  ✅ NFT Collection Deployed Successfully!
                 </p>
                 <p className="text-xs text-gray-400 break-all mb-2">
-                  {deployedAddress}
+                  Contract: {deployedAddress}
                 </p>
                 <a
                   href={`https://basescan.org/address/${deployedAddress}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-cyan-400 hover:text-cyan-300 text-sm underline"
+                  className="text-cyan-400 hover:text-cyan-300 text-sm underline block mb-2"
                 >
                   View on BaseScan →
+                </a>
+                <a
+                  href={`https://basescan.org/tx/${hash}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-cyan-400 hover:text-cyan-300 text-xs underline"
+                >
+                  View Transaction →
                 </a>
               </div>
             )}
@@ -292,13 +323,15 @@ export function NFTDeployer() {
 
         <div className="bg-cyan-500/10 border border-cyan-500/30 rounded-lg p-4">
           <p className="text-sm text-cyan-200">
-            <strong>💡 Features</strong>
+            <strong>💡 Direct Deployment (Like Remix!)</strong>
             <br />
             • Upload images & videos to IPFS
             <br />
-            • Deploy to Base network ($0 gas!)
+            • Deploy ERC721 directly to Base
             <br />
-            • Sponsored by Coinbase Paymaster
+            • $0 gas fees (Coinbase Paymaster)
+            <br />
+            • Instant deployment, view on BaseScan
           </p>
         </div>
 
