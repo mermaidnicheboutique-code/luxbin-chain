@@ -1,0 +1,20 @@
+{
+  "name": "Luxbin - Quantum-Secured Blockchain",
+  "short_name": "Luxbin",
+  "description": "Quantum-secured blockchain with zero-fee transactions on Base",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#8B5CF6",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "en-US",
+  "categories": ["finance", "productivity"],
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
