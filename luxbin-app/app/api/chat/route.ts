@@ -258,10 +258,41 @@ Provide only the complete Solidity code, no explanations.`;
       }
     }
 
-    if (isVideoRequest) {
-      // For video, generate a storyboard or description (full video gen is complex)
+    if (isVideoRequest && process.env.RUNWAY_API_KEY) {
+      try {
+        const videoPrompt = userMessage.replace(/generate.*video|create.*video/i, '').trim();
+
+        // Use Runway ML API for video generation (similar to Sora)
+        const runwayResponse = await fetch('https://api.runwayml.com/v1/image_to_video', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${process.env.RUNWAY_API_KEY}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            model: 'gen-2',
+            prompt: `Create a video like Sora: ${videoPrompt}. Futuristic, quantum-themed, Luxbin blockchain with AI elements.`,
+            duration: 5, // 5 seconds
+          }),
+        });
+
+        const videoData = await runwayResponse.json();
+        const videoUrl = videoData.output?.[0]; // Assuming the response has a URL
+
+        return NextResponse.json({
+          message: `I've generated an AI video for you! [Watch Video](${videoUrl})`,
+          blockchainState,
+        });
+      } catch (error) {
+        console.error('Video generation error:', error);
+        return NextResponse.json({
+          message: `Video generation failed. Here's a storyboard: Create a video showing quantum particles forming blockchain blocks with light-encoded data. Would you like me to generate images for the storyboard?`,
+          blockchainState,
+        });
+      }
+    } else if (isVideoRequest) {
       return NextResponse.json({
-        message: `Video generation is coming soon! For now, here's a storyboard idea: Create a video showing quantum particles forming blockchain blocks with light-encoded data. Would you like me to generate images for the storyboard?`,
+        message: `Video generation requires Runway ML API. For now, here's a storyboard: Create a video showing quantum particles forming blockchain blocks with light-encoded data. Would you like me to generate images for the storyboard?`,
         blockchainState,
       });
     }
