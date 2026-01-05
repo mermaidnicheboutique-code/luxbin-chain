@@ -1,0 +1,182 @@
+{
+  "version": 3,
+  "pages404": true,
+  "appType": "app",
+  "caseSensitive": false,
+  "basePath": "",
+  "redirects": [
+    {
+      "source": "/:path+/",
+      "destination": "/:path+",
+      "internal": true,
+      "priority": true,
+      "statusCode": 308,
+      "regex": "^(?:/((?:[^/]+?)(?:/(?:[^/]+?))*))/$"
+    }
+  ],
+  "headers": [],
+  "rewrites": {
+    "beforeFiles": [],
+    "afterFiles": [],
+    "fallback": []
+  },
+  "dynamicRoutes": [],
+  "staticRoutes": [
+    {
+      "page": "/",
+      "regex": "^/(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/(?:/)?$"
+    },
+    {
+      "page": "/_global-error",
+      "regex": "^/_global\\-error(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/_global\\-error(?:/)?$"
+    },
+    {
+      "page": "/_not-found",
+      "regex": "^/_not\\-found(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/_not\\-found(?:/)?$"
+    },
+    {
+      "page": "/about",
+      "regex": "^/about(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/about(?:/)?$"
+    },
+    {
+      "page": "/api/ai/learn",
+      "regex": "^/api/ai/learn(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/ai/learn(?:/)?$"
+    },
+    {
+      "page": "/api/ai/proactive",
+      "regex": "^/api/ai/proactive(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/ai/proactive(?:/)?$"
+    },
+    {
+      "page": "/api/chat",
+      "regex": "^/api/chat(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/chat(?:/)?$"
+    },
+    {
+      "page": "/api/coinbase/sponsor",
+      "regex": "^/api/coinbase/sponsor(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/coinbase/sponsor(?:/)?$"
+    },
+    {
+      "page": "/api/knowledge",
+      "regex": "^/api/knowledge(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/knowledge(?:/)?$"
+    },
+    {
+      "page": "/api/memory/deploy-contract",
+      "regex": "^/api/memory/deploy\\-contract(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/memory/deploy\\-contract(?:/)?$"
+    },
+    {
+      "page": "/api/memory/infinite",
+      "regex": "^/api/memory/infinite(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/memory/infinite(?:/)?$"
+    },
+    {
+      "page": "/api/memory/mindmap",
+      "regex": "^/api/memory/mindmap(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/memory/mindmap(?:/)?$"
+    },
+    {
+      "page": "/api-docs",
+      "regex": "^/api\\-docs(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api\\-docs(?:/)?$"
+    },
+    {
+      "page": "/brand-kit",
+      "regex": "^/brand\\-kit(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/brand\\-kit(?:/)?$"
+    },
+    {
+      "page": "/create-character",
+      "regex": "^/create\\-character(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/create\\-character(?:/)?$"
+    },
+    {
+      "page": "/developers",
+      "regex": "^/developers(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/developers(?:/)?$"
+    },
+    {
+      "page": "/favicon.ico",
+      "regex": "^/favicon\\.ico(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/favicon\\.ico(?:/)?$"
+    },
+    {
+      "page": "/mirror",
+      "regex": "^/mirror(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/mirror(?:/)?$"
+    },
+    {
+      "page": "/quantum-ai",
+      "regex": "^/quantum\\-ai(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/quantum\\-ai(?:/)?$"
+    },
+    {
+      "page": "/research",
+      "regex": "^/research(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/research(?:/)?$"
+    },
+    {
+      "page": "/showcase",
+      "regex": "^/showcase(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/showcase(?:/)?$"
+    },
+    {
+      "page": "/smart-wallet-demo",
+      "regex": "^/smart\\-wallet\\-demo(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/smart\\-wallet\\-demo(?:/)?$"
+    },
+    {
+      "page": "/terms",
+      "regex": "^/terms(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/terms(?:/)?$"
+    }
+  ],
+  "dataRoutes": [],
+  "rsc": {
+    "header": "rsc",
+    "varyHeader": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch",
+    "prefetchHeader": "next-router-prefetch",
+    "didPostponeHeader": "x-nextjs-postponed",
+    "contentTypeHeader": "text/x-component",
+    "suffix": ".rsc",
+    "prefetchSegmentHeader": "next-router-segment-prefetch",
+    "prefetchSegmentSuffix": ".segment.rsc",
+    "prefetchSegmentDirSuffix": ".segments",
+    "clientParamParsing": false,
+    "dynamicRSCPrerender": false
+  },
+  "rewriteHeaders": {
+    "pathHeader": "x-nextjs-rewritten-path",
+    "queryHeader": "x-nextjs-rewritten-query"
+  }
+}

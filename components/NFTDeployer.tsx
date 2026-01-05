@@ -1,50 +1,14 @@
 "use client";
 
-import { useState } from 'react';
-import { useAccount, useDeployContract, useWaitForTransactionReceipt } from 'wagmi';
+import { useState, useEffect } from 'react';
+import { useAccount, useSendTransaction, useWaitForTransactionReceipt } from 'wagmi';
 import { base } from 'wagmi/chains';
-
-// Simple ERC721 NFT Contract Bytecode
-const ERC721_BYTECODE = '0x60806040523480156200001157600080fd5b5060405162001a5038038062001a50833981810160405281019062000037919062000357565b83600090816200004891906200063d565b50826001908162000059565b50816002908162000069919062000637565b5080600381905550505050506200072456' as `0x${string}`;
-
-// ERC721 ABI
-const ERC721_ABI = [
-  {
-    inputs: [
-      { name: "name", type: "string" },
-      { name: "symbol", type: "string" },
-      { name: "baseURI", type: "string" },
-      { name: "maxSupply", type: "uint256" }
-    ],
-    stateMutability: "nonpayable",
-    type: "constructor"
-  },
-  {
-    inputs: [],
-    name: "name",
-    outputs: [{ name: "", type: "string" }],
-    stateMutability: "view",
-    type: "function"
-  },
-  {
-    inputs: [],
-    name: "symbol",
-    outputs: [{ name: "", type: "string" }],
-    stateMutability: "view",
-    type: "function"
-  },
-  {
-    inputs: [{ name: "to", type: "address" }],
-    name: "mint",
-    outputs: [{ name: "", type: "uint256" }],
-    stateMutability: "nonpayable",
-    type: "function"
-  }
-] as const;
+import { encodeDeployData } from 'viem';
+import contracts from '../lib/contracts.json';
 
 export function NFTDeployer() {
   const { address, isConnected } = useAccount();
-  const { deployContract, data: hash, isPending } = useDeployContract();
+  const { sendTransaction, data: hash, isPending } = useSendTransaction();
   const { isLoading: isConfirming, isSuccess, data: receipt } = useWaitForTransactionReceipt({ hash });
 
   const [collectionName, setCollectionName] = useState('');
@@ -124,11 +88,17 @@ export function NFTDeployer() {
         baseURI = 'ipfs://default/';
       }
 
-      // Deploy directly to Base network (like Remix!)
-      deployContract({
-        abi: ERC721_ABI,
-        bytecode: ERC721_BYTECODE,
+      // Use encodeDeployData to create the deployment bytecode
+      const deployData = encodeDeployData({
+        abi: contracts.SimpleNFT.abi,
+        bytecode: contracts.SimpleNFT.bytecode as `0x${string}`,
         args: [collectionName, collectionSymbol, baseURI, BigInt(maxSupply)],
+      });
+
+      // Send as regular transaction (this is how Remix does it!)
+      sendTransaction({
+        to: null, // Contract creation has no "to"
+        data: deployData,
         chainId: base.id,
       });
 
@@ -139,9 +109,11 @@ export function NFTDeployer() {
   };
 
   // Update deployed address when receipt is available
-  if (isSuccess && receipt && !deployedAddress) {
-    setDeployedAddress(receipt.contractAddress || '');
-  }
+  useEffect(() => {
+    if (isSuccess && receipt?.contractAddress && !deployedAddress) {
+      setDeployedAddress(receipt.contractAddress);
+    }
+  }, [isSuccess, receipt, deployedAddress]);
 
   return (
     <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-8">

@@ -1,0 +1,10 @@
+var R=require("../../../chunks/[turbopack]_runtime.js")("server/app/api/chat/route.js")
+R.c("server/chunks/[root-of-the-server]__0582bab3._.js")
+R.c("server/chunks/[root-of-the-server]__30c187a2._.js")
+R.c("server/chunks/62590_formdata-node_lib_esm_File_25103fdf.js")
+R.c("server/chunks/[root-of-the-server]__82c3de02._.js")
+R.c("server/chunks/[root-of-the-server]__f02ad0d5._.js")
+R.c("server/chunks/62590_openai_index_mjs_37788ee3._.js")
+R.c("server/chunks/94f9c_chain_luxbin-app__next-internal_server_app_api_chat_route_actions_8e3b0fbd.js")
+R.m(565653)
+module.exports=R.m(565653).exports
