@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EVM DEX - Trade on the Future</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #333; min-height: 100vh; font-style: italic; text-shadow: 2px 2px 4px rgba(255,255,255,0.7); }
+        .hero-video { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; object-fit: cover; opacity: 0.8; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; position: relative; z-index: 1; }
+        header { text-align: center; padding: 30px 0; }
+        h1 { font-size: 3em; margin-bottom: 20px; }
+        .subtitle { font-size: 1.2em; opacity: 0.9; }
+        .btn { display: inline-block; background: #fff; color: #667eea; padding: 15px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; margin: 10px; transition: 0.3s; }
+        .btn:hover { background: #f0f0f0; transform: translateY(-2px); }
+        .features { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin: 30px 0; }
+        .feature { background: rgba(255,255,255,0.1); padding: 20px; border-radius: 10px; text-align: center; backdrop-filter: blur(10px); transition: transform 0.3s, box-shadow 0.3s; }
+        .feature:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
+        .feature h3 { margin-bottom: 15px; }
+        footer { text-align: center; padding: 20px; background: rgba(0,0,0,0.2); margin-top: 30px; }
+    </style>
+</head>
+<body>
+    <video class="hero-video" autoplay muted loop>
+        <source src="hero-video.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+    <header class="container">
+        <h1>EVM DEX</h1>
+        <p class="subtitle">Trade seamlessly on our EVM-powered decentralized exchange. Fast, secure, and efficient.</p>
+        <a href="#trading" class="btn">Start Trading</a>
+        <a href="#features" class="btn">Learn More</a>
+    </header>
+
+    <section id="features" class="container">
+        <h2 style="text-align: center; margin-bottom: 20px; font-size: 1.5em; opacity: 0.8;">Why Choose EVM DEX?</h2>
+        <div class="features">
+            <div class="feature">
+                <h3>⚡ Fast Transactions</h3>
+                <p>Leverage EVM efficiency for lightning-quick trades with minimal gas fees.</p>
+            </div>
+            <div class="feature">
+                <h3>🔒 Secure & Decentralized</h3>
+                <p>Built on robust EVM technology, ensuring trustless and secure operations.</p>
+            </div>
+            <div class="feature">
+                <h3>📊 Advanced Analytics</h3>
+                <p>Real-time charts and insights to track your positions and market trends.</p>
+            </div>
+            <div class="feature">
+                <h3>🌐 Multi-Chain Support</h3>
+                <p>Connect across chains for unparalleled liquidity and trading options.</p>
+            </div>
+        </div>
+    </section>
+
+    <footer class="container">
+        <p>&copy; 2024 EVM DEX. Powered by EVM-1-8-128. <a href="https://gitlab.com/jason198511/evm-1-8-128-release" style="color: #fff;">View Source</a></p>
+    </footer>
+</body>
+</html>

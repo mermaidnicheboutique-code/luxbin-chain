@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Luxbin Token Onramp</title>
+    <script src="https://commerce.coinbase.com/v2/checkout.js"></script>
+</head>
+<body>
+    <h1>Buy ETH and Convert to Luxbin Tokens</h1>
+    <p>Use Coinbase Commerce to buy ETH, then convert to LUX tokens.</p>
+
+    <!-- Coinbase Commerce Checkout Button -->
+    <div id="commerce-checkout"></div>
+
+    <script>
+        const checkout = CoinbaseCommerce.Checkout({
+            chargeId: 'YOUR_CHARGE_ID_HERE',  // Replace with your Coinbase Commerce charge ID
+            onSuccess: function() {
+                alert('Payment successful! ETH purchased.');
+                // Here, trigger conversion to LUX tokens (call backend API)
+                convertToLuxbin();
+            },
+            onFailure: function() {
+                alert('Payment failed.');
+            }
+        });
+
+        checkout.render('#commerce-checkout');
+
+        function convertToLuxbin() {
+            // Call your backend to handle ETH -> LUX conversion
+            fetch('/convert', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userAddress: 'USER_ETH_ADDRESS' })  // Replace with user's address
+            })
+            .then(response => response.json())
+            .then(data => alert(`Converted! LUX Balance: ${data.balance}`));
+        }
+    </script>
+</body>
+</html>

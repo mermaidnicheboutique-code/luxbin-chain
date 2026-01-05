@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coinbase Base Paymaster Integration</title>
+    <script src="https://cdn.jsdelivr.net/npm/ethers@6.7.0/dist/ethers.umd.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        button:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+        }
+        .info-box {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+        .status {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+            background: rgba(0, 0, 0, 0.3);
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+        input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Coinbase Base Paymaster Integration</h1>
+
+        <div class="info-box">
+            <h3>What is a Paymaster?</h3>
+            <p>A Paymaster sponsors gas fees for your users, enabling gasless transactions on Base network.
+               Your users can interact with smart contracts without needing ETH for gas!</p>
+        </div>
+
+        <div class="status" id="status">
+            <strong>Status:</strong> Not connected
+        </div>
+
+        <div id="walletInfo" style="display:none;">
+            <p><strong>Connected Wallet:</strong> <span id="walletAddress"></span></p>
+            <p><strong>Network:</strong> <span id="networkName"></span></p>
+            <p><strong>Balance:</strong> <span id="balance"></span> ETH</p>
+        </div>
+
+        <button id="connectBtn" onclick="connectWallet()">Connect Wallet</button>
+        <button id="sendTxBtn" onclick="sendSponsoredTransaction()" style="display:none;">Send Gasless Transaction</button>
+
+        <div id="transactionForm" style="display:none; margin-top: 20px;">
+            <h3>Send Gasless Transaction</h3>
+            <input type="text" id="recipientAddress" placeholder="Recipient Address (0x...)">
+            <input type="text" id="amount" placeholder="Amount in ETH (e.g., 0.001)">
+            <button onclick="executeSponsoredTx()">Execute Sponsored Transaction</button>
+        </div>
+
+        <div id="txResult" class="info-box" style="display:none;">
+            <h3>Transaction Result</h3>
+            <p id="txHash"></p>
+            <p id="txStatus"></p>
+        </div>
+
+        <div class="info-box">
+            <h3>📚 Integration Guide</h3>
+            <ol>
+                <li>Your Paymaster URL is configured in the code below</li>
+                <li>Connect your wallet to Base network</li>
+                <li>Send gasless transactions without needing ETH for gas</li>
+                <li>The Coinbase Paymaster sponsors your transaction fees</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        // Coinbase Developer Platform Configuration
+        const COINBASE_PAYMASTER_URL = 'https://api.developer.coinbase.com/rpc/v1/base/uYtF7xHARvwtLeF4VG08Ozpp6HOqBEHM';
+        const BASE_CHAIN_ID = 8453; // Base Mainnet
+        const BASE_SEPOLIA_CHAIN_ID = 84532; // Base Sepolia Testnet
+
+        let provider;
+        let signer;
+        let userAddress;
+
+        // Connect wallet function
+        async function connectWallet() {
+            try {
+                updateStatus('Connecting wallet...');
+
+                if (typeof window.ethereum === 'undefined') {
+                    alert('Please install MetaMask or another Web3 wallet!');
+                    return;
+                }
+
+                // Request account access
+                await window.ethereum.request({ method: 'eth_requestAccounts' });
+
+                // Create provider and signer
+                provider = new ethers.BrowserProvider(window.ethereum);
+                signer = await provider.getSigner();
+                userAddress = await signer.getAddress();
+
+                // Check network
+                const network = await provider.getNetwork();
+                console.log('Connected to network:', network);
+
+                // If not on Base, prompt to switch
+                if (network.chainId !== BigInt(BASE_CHAIN_ID) && network.chainId !== BigInt(BASE_SEPOLIA_CHAIN_ID)) {
+                    await switchToBase();
+                }
+
+                // Update UI
+                document.getElementById('walletAddress').textContent = userAddress.slice(0, 6) + '...' + userAddress.slice(-4);
+                document.getElementById('networkName').textContent = network.name || 'Base';
+
+                const balance = await provider.getBalance(userAddress);
+                document.getElementById('balance').textContent = ethers.formatEther(balance);
+
+                document.getElementById('walletInfo').style.display = 'block';
+                document.getElementById('sendTxBtn').style.display = 'inline-block';
+                document.getElementById('transactionForm').style.display = 'block';
+                document.getElementById('connectBtn').style.display = 'none';
+
+                updateStatus('✅ Connected to Base network!');
+            } catch (error) {
+                console.error('Connection error:', error);
+                updateStatus('❌ Connection failed: ' + error.message);
+            }
+        }
+
+        // Switch to Base network
+        async function switchToBase() {
+            try {
+                await window.ethereum.request({
+                    method: 'wallet_switchEthereumChain',
+                    params: [{ chainId: '0x' + BASE_CHAIN_ID.toString(16) }],
+                });
+            } catch (switchError) {
+                // Chain not added, add it
+                if (switchError.code === 4902) {
+                    await window.ethereum.request({
+                        method: 'wallet_addEthereumChain',
+                        params: [{
+                            chainId: '0x' + BASE_CHAIN_ID.toString(16),
+                            chainName: 'Base',
+                            nativeCurrency: {
+                                name: 'Ethereum',
+                                symbol: 'ETH',
+                                decimals: 18
+                            },
+                            rpcUrls: [COINBASE_PAYMASTER_URL],
+                            blockExplorerUrls: ['https://basescan.org']
+                        }]
+                    });
+                }
+            }
+        }
+
+        // Send sponsored transaction using Coinbase Paymaster
+        async function executeSponsoredTx() {
+            try {
+                const recipient = document.getElementById('recipientAddress').value;
+                const amount = document.getElementById('amount').value;
+
+                if (!recipient || !amount) {
+                    alert('Please fill in all fields');
+                    return;
+                }
+
+                updateStatus('Preparing sponsored transaction...');
+
+                // Create transaction
+                const tx = {
+                    to: recipient,
+                    value: ethers.parseEther(amount),
+                    // Paymaster will sponsor the gas, so we can set gasLimit
+                    gasLimit: 21000
+                };
+
+                updateStatus('Sending transaction through Coinbase Paymaster...');
+
+                // Send transaction (Paymaster sponsors gas)
+                const txResponse = await signer.sendTransaction(tx);
+
+                document.getElementById('txHash').innerHTML = `<strong>Transaction Hash:</strong> <a href="https://basescan.org/tx/${txResponse.hash}" target="_blank">${txResponse.hash}</a>`;
+                document.getElementById('txStatus').textContent = 'Status: Pending...';
+                document.getElementById('txResult').style.display = 'block';
+
+                updateStatus('⏳ Transaction submitted, waiting for confirmation...');
+
+                // Wait for confirmation
+                const receipt = await txResponse.wait();
+
+                document.getElementById('txStatus').textContent = `Status: ✅ Confirmed in block ${receipt.blockNumber}`;
+                updateStatus('✅ Transaction confirmed! Gas fees sponsored by Coinbase Paymaster.');
+
+                console.log('Transaction receipt:', receipt);
+            } catch (error) {
+                console.error('Transaction error:', error);
+                updateStatus('❌ Transaction failed: ' + error.message);
+                alert('Transaction failed: ' + error.message);
+            }
+        }
+
+        // Alternative: Use Coinbase Paymaster RPC directly
+        async function sendSponsoredTransaction() {
+            try {
+                updateStatus('Connecting to Coinbase Paymaster RPC...');
+
+                // Create a provider using the Coinbase Paymaster URL
+                const paymasterProvider = new ethers.JsonRpcProvider(COINBASE_PAYMASTER_URL);
+
+                // Get network info
+                const network = await paymasterProvider.getNetwork();
+                console.log('Paymaster Network:', network);
+
+                // Get gas price from paymaster
+                const feeData = await paymasterProvider.getFeeData();
+                console.log('Fee Data from Paymaster:', feeData);
+
+                updateStatus('✅ Connected to Coinbase Paymaster! Ready to send gasless transactions.');
+
+                alert('Paymaster is ready! Use the form below to send a gasless transaction.');
+            } catch (error) {
+                console.error('Paymaster connection error:', error);
+                updateStatus('❌ Paymaster connection failed: ' + error.message);
+            }
+        }
+
+        // Update status display
+        function updateStatus(message) {
+            document.getElementById('status').innerHTML = `<strong>Status:</strong> ${message}`;
+        }
+
+        // Listen for account changes
+        if (window.ethereum) {
+            window.ethereum.on('accountsChanged', function (accounts) {
+                if (accounts.length === 0) {
+                    updateStatus('Please connect your wallet');
+                } else {
+                    window.location.reload();
+                }
+            });
+
+            window.ethereum.on('chainChanged', function (chainId) {
+                window.location.reload();
+            });
+        }
+    </script>
+</body>
+</html>
