@@ -1,17 +1,50 @@
-# Foundry Build Artifacts
-contracts/artifacts/
-contracts/broadcast/
-contracts/cache/
-contracts/out/
-*.lock
-foundry.lock
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
-# Node.js
-node_modules/
-package-lock.json
+# dependencies
+/node_modules
+/.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# testing
+/coverage
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# misc
+.DS_Store
+*.pem
+
+# debug
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+.pnpm-debug.log*
+
+# env files (can opt-in for committing if needed)
+.env*
+.env.backup
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# Rust/Cargo
+**/target/
+**/*.rs.bk
+Cargo.lock
 
 # Python
 __pycache__/
@@ -19,63 +52,46 @@ __pycache__/
 *$py.class
 *.so
 .Python
-env/
-venv/
-ENV/
-.venv
-*.egg
 *.egg-info/
 dist/
-build/
-.eggs/
+*.egg
+.pytest_cache/
+venv/
+env/
 
-# Environment Variables
-.env
-.env.local
-.env.*.local
-*.key
-*.secret
-tesla_tokens.json
-crypto_keys_json
+# Large files and archives
+*.zip
+*.tar.gz
+*.dmg
+*.pkg
+
+# Backup files
+*.backup
+*~
 
 # IDE
 .vscode/
 .idea/
 *.swp
 *.swo
-*~
-.DS_Store
 
-# Logs
-*.log
-logs/
+# OS
+.Trash/
+Thumbs.db
+
+# Temporary repos
+temp_repo_*/
+
+# Large external projects (keep separate repos)
+cdp-sdk/
+my-base-project/
+superchainerc20-starter/
+miniforge/
 quantum_consciousness_db/
 
-# Testing
-coverage/
-.coverage
-.pytest_cache/
-.tox/
-
-# macOS
-.DS_Store
-.AppleDouble
-.LSOverride
-._*
-
-# Cache directories
-.cache/
-.npm/
-.conda/
-
-# Temporary files
-*.tmp
-*.temp
-tmp/
-temp/
-
-# Generated blockchain data
-luxbin_mirror/
-
-# Rust build artifacts
-target/
+# Binaries
+polkadot
+substrate
+substrate-node
+substrate-node-aarch64
+get-pip.py
