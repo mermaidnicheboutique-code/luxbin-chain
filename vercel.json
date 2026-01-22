@@ -3,5 +3,6 @@
   "github": {
     "silent": true
   },
-  "rootDirectory": "luxbin-app"
+  "buildCommand": "cd luxbin-app && npm run build",
+  "outputDirectory": "luxbin-app/.next"
 }
