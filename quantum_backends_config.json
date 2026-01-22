@@ -1,0 +1,37 @@
+{
+  "quantum_backends": {
+    "ibm": {
+      "backends": [
+        {"name": "ibm_fez", "qubits": 156, "status": "active"},
+        {"name": "ibm_torino", "qubits": 133, "status": "active"},
+        {"name": "ibm_marrakesh", "qubits": 156, "status": "active"}
+      ],
+      "credentials": {
+        "channel": "ibm_quantum",
+        "token_env_var": "QISKIT_IBM_TOKEN"
+      }
+    },
+    "ionq": {
+      "backends": [
+        {"name": "ionq_harmony", "qubits": 11, "status": "active"},
+        {"name": "ionq_aria", "qubits": 25, "status": "active"}
+      ],
+      "credentials": {
+        "api_key_env_var": "IONQ_API_KEY"
+      }
+    },
+    "rigetti": {
+      "backends": [
+        {"name": "rigetti_aspen", "qubits": 32, "status": "active"}
+      ],
+      "credentials": {
+        "api_key_env_var": "RIGETTI_API_KEY"
+      }
+    }
+  },
+  "luxbin_deployment": {
+    "light_language_backends": ["ibm_fez", "ionq_harmony", "rigetti_aspen"],
+    "chain_backends": ["ibm_torino", "ibm_marrakesh", "ionq_aria"],
+    "internet_backends": ["ibm_fez", "ibm_torino", "ibm_marrakesh", "ionq_harmony", "ionq_aria", "rigetti_aspen"]
+  }
+}
