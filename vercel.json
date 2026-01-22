@@ -1,0 +1,8 @@
+{
+  "regions": ["iad1"],
+  "github": {
+    "silent": true
+  },
+  "buildCommand": "cd luxbin-app && npm run build",
+  "outputDirectory": "luxbin-app/.next"
+}
